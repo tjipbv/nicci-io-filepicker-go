@@ -26,7 +26,7 @@ const (
 )
 
 // TODO : (ppknap)
-type PolicyOptions struct {
+type PolicyOpts struct {
 	Expiry    time.Time `json:"-"`
 	Handle    string    `json:"handle,omitempty"`
 	Call      []Method  `json:"call,omitempty"`
@@ -39,9 +39,9 @@ type PolicyOptions struct {
 // MarshalJSON implements json.Marshaler interface. It transforms Expiry field
 // representation to UNIX time value. By default, marshaling time.Time structure
 // produces a quoted string in RFC 3339 format.
-func (po *PolicyOptions) MarshalJSON() ([]byte, error) {
+func (po *PolicyOpts) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
-		PolicyOptions
+		PolicyOpts
 		ExpiryUNIX int64 `json:"expiry"`
 	}{*po, po.Expiry.Unix()})
 }
@@ -50,7 +50,7 @@ func (po *PolicyOptions) MarshalJSON() ([]byte, error) {
 type Policy string
 
 // TODO : (ppknap)
-func MakePolicy(po *PolicyOptions) (policy Policy, err error) {
+func MakePolicy(po *PolicyOpts) (policy Policy, err error) {
 	if po.Expiry.IsZero() {
 		return policy, fmt.Errorf("filepicker: invalid expiration date")
 	}
@@ -65,6 +65,12 @@ func MakePolicy(po *PolicyOptions) (policy Policy, err error) {
 type Security struct {
 	Policy    Policy `json:"policy,omitempty"`
 	Signature string `json:"signature,omitempty"`
+}
+
+// toValues takes all non-zero values from provided Security instance and puts
+// them to a url.Values object.
+func (s Security) toValues() url.Values {
+	return toValues(s)
 }
 
 // TODO : (ppknap)

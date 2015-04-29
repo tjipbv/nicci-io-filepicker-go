@@ -49,17 +49,28 @@ type Blob struct {
 
 // NewBlob TODO : (ppknap)
 func NewBlob(handle string) (blob Blob) {
+	return newBlob(handle, Security{})
+}
+
+// NewBlobSecurity TODO : (ppknap)
+func NewBlobSecurity(handle string, security Security) (blob Blob) {
+	return newBlob(handle, security)
+}
+
+// NewBlob TODO : (ppknap)
+func newBlob(handle string, security Security) (blob Blob) {
 	return Blob{
 		Url: url.URL{
-			Scheme: apiURL.Scheme,
-			Host:   apiURL.Host,
-			Path:   path.Join("api", "file", handle),
+			Scheme:   apiURL.Scheme,
+			Host:     apiURL.Host,
+			Path:     path.Join("api", "file", handle),
+			RawQuery: security.toValues().Encode(),
 		}.String(),
 	}
 }
 
-// Options structure allows user to configure how to store the data.
-type Options struct {
+// StoreOpts structure allows user to configure how to store the data.
+type StoreOpts struct {
 	// Filename specifies the name of the stored file. If this variable is
 	// empty, filepicker's server will choose the label automatically.
 	Filename string `json:"filename,omitempty"`
@@ -93,6 +104,12 @@ type Options struct {
 	Security
 }
 
+// toValues takes all non-zero values from provided StoreOpts entity and puts
+// them to a url.Values object.
+func (so *StoreOpts) toValues() url.Values {
+	return toValues(*so)
+}
+
 // Client TODO : (ppknap)
 type Client struct {
 	apiKey  string
@@ -121,15 +138,15 @@ func newClient(apiKey string, storage Storage) *Client {
 
 // StoreURL TODO : (ppknap)
 // TODO : mv url storeable(?)
-func (c *Client) StoreURL(dataUrl string, opt Options) (blob Blob, err error) {
+func (c *Client) StoreURL(dataUrl string, opt StoreOpts) (blob Blob, err error) {
 	values := url.Values{}
 	values.Set("url", dataUrl)
-	return storeRes(c.Client.PostForm(c.newStoreURL(opt).String(), values))
+	return storeRes(c.Client.PostForm(c.newStoreURL(&opt).String(), values))
 }
 
 // Store TODO : (ppknap)
 // TODO : mv path storeable(?)
-func (c *Client) Store(name string, opt Options) (blob Blob, err error) {
+func (c *Client) Store(name string, opt StoreOpts) (blob Blob, err error) {
 	buff := &bytes.Buffer{}
 	wr := multipart.NewWriter(buff)
 	file, err := os.Open(name)
@@ -146,7 +163,7 @@ func (c *Client) Store(name string, opt Options) (blob Blob, err error) {
 	}
 	content := wr.FormDataContentType()
 	wr.Close()
-	return storeRes(c.Client.Post(c.newStoreURL(opt).String(), content, buff))
+	return storeRes(c.Client.Post(c.newStoreURL(&opt).String(), content, buff))
 }
 
 // storeRes handles client response errors and if there are none, the function
@@ -167,12 +184,12 @@ func invalidResCode(code int) bool {
 	return code != http.StatusOK
 }
 
-func (c *Client) newStoreURL(opt Options) *url.URL {
+func (c *Client) newStoreURL(opt *StoreOpts) *url.URL {
 	storage := c.storage
 	if opt.Location != "" {
 		storage = opt.Location
 	}
-	vals := toValues(opt)
+	vals := opt.toValues()
 	vals.Set("key", c.apiKey)
 	return &url.URL{
 		Scheme:   apiURL.Scheme,
@@ -182,10 +199,10 @@ func (c *Client) newStoreURL(opt Options) *url.URL {
 	}
 }
 
-// toValues takes all non-zero values from provided Options argument and puts
-// them to url.Values object.
-func toValues(opt Options) url.Values {
-	data, err := json.Marshal(opt)
+// toValues takes all non-zero values from provided interface and puts them to
+// a url.Values object.
+func toValues(val interface{}) url.Values {
+	data, err := json.Marshal(val)
 	if err != nil {
 		panic("filepicker: invalid field " + err.Error())
 	}
