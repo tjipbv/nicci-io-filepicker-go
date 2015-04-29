@@ -1,0 +1,219 @@
+package filepicker
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io"
+	"mime/multipart"
+	"net/http"
+	"net/url"
+	"os"
+	"path"
+)
+
+// FilepickerUrl is a link to the filepicker.io service.
+const FilepickerUrl = "https://www.filepicker.io/"
+
+var apiURL url.URL // URL representation of FilepickerUrl address.
+
+func init() {
+	var err error
+	if apiURL, err = url.Parse(FilepickerUrl); err != nil {
+		panic("filepicker: invalid filepicker address " + FilepickerUrl)
+	}
+}
+
+// Storage represents cloud storage services supported by filepicker client.
+type Storage string
+
+const (
+	S3        = Storage("S3")        // Amazon Simple Storage Service.
+	Azure     = Storage("azure")     // Microsoft Azure storage.
+	Dropbox   = Storage("dropbox")   // Dropbox folder.
+	Rackspace = Storage("rackspace") // Rackspace Cloud files.
+)
+
+// Blob TODO : (ppknap)
+type Blob struct {
+	Url       string  `json:"url,omitempty"`
+	Filename  string  `json:"filename,omitempty"`
+	Mimetype  string  `json:"type,omitempty"`
+	Size      uint64  `json:"size,omitempty"`
+	Key       string  `json:"key,omitempty"`
+	Container Storage `json:"container,omitempty"`
+	Writeable bool    `json:"isWriteable,omitempty"`
+	Path      string  `json:"path,omitempty"`
+}
+
+// NewBlob TODO : (ppknap)
+func NewBlob(handle string) (blob Blob) {
+	return Blob{
+		Url: url.URL{
+			Scheme: apiURL.Scheme,
+			Host:   apiURL.Host,
+			Path:   path.Join("api", "file", handle),
+		}.String(),
+	}
+}
+
+// Options structure allows user to configure how to store the data.
+type Options struct {
+	// Filename specifies the name of the stored file. If this variable is
+	// empty, filepicker's server will choose the label automatically.
+	Filename string `json:"filename,omitempty"`
+
+	// Mimetype specifies the type of the stored file.
+	Mimetype string `json:"mimetype,omitempty"`
+
+	// Location contains the name of file storage service which will be used to
+	// store a file. If this field is not set, filepicker client will use Simple
+	// Storage Service (S3).
+	Location Storage `json:"location,omitempty"`
+
+	// Path to store the file at within the specified file store. If the
+	// provided path ends in a '/', it will be treated as a folder.
+	Path string `json:"path,omitempty"`
+
+	// Container or a bucket in the specified file store where the file should
+	// end up. If this parameter is omitted, the file is stored in the default
+	// container specified in the user's developer portal.
+	Container string `json:"container,omitempty"`
+
+	// Base64Decode indicates whether the data should be first decoded from
+	// base64 before being written to the file.
+	Base64Decode bool `json:"base64decode,omitempty"`
+
+	// Access allows to use direct links to underlying file store service.
+	// TODO : make type
+	Access string `json:"access,omitempty"`
+
+	// TODO : (ppknap) [// Security {policy: POLICY, signature: SIGNATURE}]
+}
+
+// Client TODO : (ppknap)
+type Client struct {
+	apiKey  string
+	storage Storage
+	Client  *http.Client
+}
+
+// NewClient TODO : (ppknap)
+func NewClient(apiKey string) *Client {
+	return newClient(apiKey, S3)
+}
+
+// NewClientStorage TODO : (ppknap)
+func NewClientStorage(apiKey string, storage Storage) *Client {
+	return newClient(apiKey, storage)
+}
+
+// newClient TODO : (ppknap)
+func newClient(apiKey string, storage Storage) *Client {
+	return &Client{
+		apiKey:  apiKey,
+		storage: storage,
+		Client:  &http.Client{},
+	}
+}
+
+// StoreURL TODO : (ppknap)
+// TODO : mv url storeable(?)
+func (c *Client) StoreUrl(dataUrl string, opt Options) (blob Blob, err error) {
+	values := url.Values{}
+	values.Set("url", dataUrl)
+	return storeRes(c.Client.PostForm(c.newStoreUrl(opt).String(), values))
+}
+
+// Store TODO : (ppknap)
+// TODO : mv path storeable(?)
+func (c *Client) Store(name string, opt Options) (blob Blob, err error) {
+	buff := &bytes.Buffer{}
+	wr := multipart.NewWriter(buff)
+	file, err := os.Open(name)
+	if err != nil {
+		return
+	}
+	defer file.Close()
+	mimewr, err := wr.CreateFormFile("fileUpload", name)
+	if err != nil {
+		return
+	}
+	if _, err = io.Copy(mimewr, file); err != nil {
+		return
+	}
+	content := wr.FormDataContentType()
+	wr.Close()
+	return storeRes(c.Client.Post(c.newStoreUrl(opt).String(), content, buff))
+}
+
+// storeRes handles client response errors and if there are none, the function
+// reads response's Body and unmarshals it into Blob object.
+func storeRes(resp *http.Response, respErr error) (blob Blob, err error) {
+	switch {
+	case respErr != nil:
+		return blob, err
+	case invalidResCode(resp.StatusCode):
+		return blob, FPError(resp.StatusCode)
+	}
+	defer resp.Body.Close()
+	return blob, json.NewDecoder(resp.Body).Decode(&blob)
+}
+
+// invalidResCode returns true when response code is not valid.
+func invalidResCode(code int) bool {
+	return code != http.StatusOK
+}
+
+func (c *Client) newStoreUrl(opt Options) *url.URL {
+	storage := c.storage
+	if opt.Location != "" {
+		storage = opt.Location
+	}
+	vals := toValues(opt)
+	vals.Set("key", c.apiKey)
+	return &url.URL{
+		Scheme:   apiURL.Scheme,
+		Host:     apiURL.Host,
+		Path:     path.Join("api", "store", string(storage)),
+		RawQuery: vals.Encode(),
+	}
+}
+
+// toValues takes all non-zero values from provided Options argument and puts
+// them to url.Values object.
+func toValues(opt Options) url.Values {
+	data, err := json.Marshal(opt)
+	if err != nil {
+		panic("filepicker: invalid field " + err.Error())
+	}
+	temp := make(map[string]interface{})
+	json.Unmarshal(data, &temp)
+	values := url.Values{}
+	for k, v := range temp {
+		values.Set(k, fmt.Sprint(v))
+	}
+	return values
+}
+
+/*
+//-----------------------------------------------------------------------------
+func FromURL(url string) (Storer, error) {}
+func LocalFile(file string) (Storer, error) {}
+
+func NewClient(key string) (*Client, error) {}
+
+type Security {
+    Policy string // POLICY
+    Signature string // SIGNATURE
+
+}
+
+// Client.Store(Storer) (Blob, error)
+// Client.Remove(Blob) (error)
+// Client.Stats(Blob) (Stats, error)
+// Client.Rewrite(Blob, Storer) (Blob, error)
+
+
+//------------------------------------------------------------------------------
+*/
