@@ -12,16 +12,16 @@ import (
 	"path"
 )
 
-// FilepickerUrl is a link to the filepicker.io service.
-const FilepickerUrl = "https://www.filepicker.io/"
+// FilepickerURL is a link to the filepicker.io service.
+const FilepickerURL = "https://www.filepicker.io/"
 
-// apiURL is a URL representation of FilepickerUrl address.
+// apiURL is a URL representation of FilepickerURL address.
 var apiURL url.URL
 
 func init() {
 	var err error
-	if apiURL, err = url.Parse(FilepickerUrl); err != nil {
-		panic("filepicker: invalid filepicker address " + FilepickerUrl)
+	if apiURL, err = url.Parse(FilepickerURL); err != nil {
+		panic("filepicker: invalid filepicker address " + FilepickerURL)
 	}
 }
 
@@ -89,7 +89,8 @@ type Options struct {
 	// TODO : make type
 	Access string `json:"access,omitempty"`
 
-	// TODO : (ppknap) [// Security {policy: POLICY, signature: SIGNATURE}]
+	// TODO : (ppknap)
+	Security
 }
 
 // Client TODO : (ppknap)
@@ -120,10 +121,10 @@ func newClient(apiKey string, storage Storage) *Client {
 
 // StoreURL TODO : (ppknap)
 // TODO : mv url storeable(?)
-func (c *Client) StoreUrl(dataUrl string, opt Options) (blob Blob, err error) {
+func (c *Client) StoreURL(dataUrl string, opt Options) (blob Blob, err error) {
 	values := url.Values{}
 	values.Set("url", dataUrl)
-	return storeRes(c.Client.PostForm(c.newStoreUrl(opt).String(), values))
+	return storeRes(c.Client.PostForm(c.newStoreURL(opt).String(), values))
 }
 
 // Store TODO : (ppknap)
@@ -145,7 +146,7 @@ func (c *Client) Store(name string, opt Options) (blob Blob, err error) {
 	}
 	content := wr.FormDataContentType()
 	wr.Close()
-	return storeRes(c.Client.Post(c.newStoreUrl(opt).String(), content, buff))
+	return storeRes(c.Client.Post(c.newStoreURL(opt).String(), content, buff))
 }
 
 // storeRes handles client response errors and if there are none, the function
@@ -166,7 +167,7 @@ func invalidResCode(code int) bool {
 	return code != http.StatusOK
 }
 
-func (c *Client) newStoreUrl(opt Options) *url.URL {
+func (c *Client) newStoreURL(opt Options) *url.URL {
 	storage := c.storage
 	if opt.Location != "" {
 		storage = opt.Location
