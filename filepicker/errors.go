@@ -1,42 +1,34 @@
 package filepicker
 
-/// INFO : (ppknap) this file will be rewritten.
+import "strconv"
 
+// FPError represents an error which could be produced by filepicker client.
 type FPError int
 
+// Error satisfies builtin.error interface. It prints the error string with
+// the reason of failure.
 func (e FPError) Error() string {
-	return "TODO"
+	var prefix = "filepicker: " + strconv.Itoa(int(e)) + " - "
+	if msg, ok := errmsgs[e]; ok {
+		return prefix + msg
+	}
+	return prefix + "unknown error"
 }
 
 const (
-	ErrBadParameters             = 400
-	ErrInvalidRequest            = 403
-	ErrDOMFilesUnsupported       = 111 // Store
-	ErrFileNotFound              = 115 // Store
-	ErrGeneralRead               = 118 // Store
-	ErrWriteBlobUnreachable      = 121
-	ErrWriteURLUnreachable       = 122
-	ErrStoreFileUnreachable      = 151 // Store URL/Store
-	ErrStoreURLUnreachable       = 152 // Store URL
-	ErrStatFileCannotBeFound     = 161 // Stat
-	ErrStatCannotFetchMetadata   = 162 // Stat
-	ErrRmFileCannotBeFound       = 171 // remove
-	ErrRmContentStoreUnreachable = 172 // remove
-
+	ErrFileNotFound         FPError = 115
+	ErrGeneralReadError     FPError = 118
+	ErrFileStoreUnreachable FPError = 151
+	ErrRemoteUrlUnreachable FPError = 152
+	ErrBadParameters        FPError = 400
+	ErrInvalidRequest       FPError = 403
 )
 
-var errors = map[int]string{
-	ErrBadParameters:             "filepicker: bad parameters were passed to the server",
-	ErrInvalidRequest:            "filepicker: invalid request",
-	ErrDOMFilesUnsupported:       "filepicker: DOM file objects are not supported",
-	ErrFileNotFound:              "filepicker: file not found",
-	ErrGeneralRead:               "filepicker: general read error",
-	ErrWriteBlobUnreachable:      "filepicker: the Blob to write to could not be found",
-	ErrWriteURLUnreachable:       "filepicker: the remote URL is unreachable",
-	ErrStoreFileUnreachable:      "filepicker: the file store is unreachable",
-	ErrStoreURLUnreachable:       "filepicker: the remote URL is unreachable",
-	ErrStatFileCannotBeFound:     "filepicker: the file cannot be found",
-	ErrStatCannotFetchMetadata:   "filepicker: cannot fetch file metadata",
-	ErrRmFileCannotBeFound:       "filepicker: cannot find the requested file",
-	ErrRmContentStoreUnreachable: "filepicker: the underlying content store is unreachable",
+var errmsgs = map[FPError]string{
+	ErrFileNotFound:         "file not found",
+	ErrGeneralReadError:     "general read error",
+	ErrFileStoreUnreachable: "the file store could not be reached",
+	ErrRemoteUrlUnreachable: "the remote URL could not be reached",
+	ErrBadParameters:        "bad parameters were passed to the server",
+	ErrInvalidRequest:       "invalid request",
 }

@@ -15,7 +15,8 @@ import (
 // FilepickerUrl is a link to the filepicker.io service.
 const FilepickerUrl = "https://www.filepicker.io/"
 
-var apiURL url.URL // URL representation of FilepickerUrl address.
+// apiURL is a URL representation of FilepickerUrl address.
+var apiURL url.URL
 
 func init() {
 	var err error
@@ -195,25 +196,3 @@ func toValues(opt Options) url.Values {
 	}
 	return values
 }
-
-/*
-//-----------------------------------------------------------------------------
-func FromURL(url string) (Storer, error) {}
-func LocalFile(file string) (Storer, error) {}
-
-func NewClient(key string) (*Client, error) {}
-
-type Security {
-    Policy string // POLICY
-    Signature string // SIGNATURE
-
-}
-
-// Client.Store(Storer) (Blob, error)
-// Client.Remove(Blob) (error)
-// Client.Stats(Blob) (Stats, error)
-// Client.Rewrite(Blob, Storer) (Blob, error)
-
-
-//------------------------------------------------------------------------------
-*/
