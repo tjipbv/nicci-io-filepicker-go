@@ -147,15 +147,15 @@ func newClient(apiKey string, storage Storage) *Client {
 
 // StoreURL TODO : (ppknap)
 // TODO : mv url storeable(?)
-func (c *Client) StoreURL(dataUrl string, opt StoreOpts) (blob *Blob, err error) {
+func (c *Client) StoreURL(dataUrl string, opt *StoreOpts) (blob *Blob, err error) {
 	values := url.Values{}
 	values.Set("url", dataUrl)
-	return storeRes(c.Client.PostForm(c.newStoreURL(&opt).String(), values))
+	return storeRes(c.Client.PostForm(c.newStoreURL(opt).String(), values))
 }
 
 // Store TODO : (ppknap)
 // TODO : mv path storeable(?)
-func (c *Client) Store(name string, opt StoreOpts) (blob *Blob, err error) {
+func (c *Client) Store(name string, opt *StoreOpts) (blob *Blob, err error) {
 	buff := &bytes.Buffer{}
 	wr := multipart.NewWriter(buff)
 	file, err := os.Open(name)
@@ -172,7 +172,7 @@ func (c *Client) Store(name string, opt StoreOpts) (blob *Blob, err error) {
 	}
 	content := wr.FormDataContentType()
 	wr.Close()
-	return storeRes(c.Client.Post(c.newStoreURL(&opt).String(), content, buff))
+	return storeRes(c.Client.Post(c.newStoreURL(opt).String(), content, buff))
 }
 
 // storeRes handles client response errors and if there are none, the function
