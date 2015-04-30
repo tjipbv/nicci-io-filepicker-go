@@ -16,7 +16,7 @@ import (
 const FilepickerURL = "https://www.filepicker.io/"
 
 // apiURL is a URL representation of FilepickerURL address.
-var apiURL url.URL
+var apiURL *url.URL
 
 func init() {
 	var err error
@@ -59,14 +59,13 @@ func NewBlobSecurity(handle string, security Security) (blob Blob) {
 
 // NewBlob TODO : (ppknap)
 func newBlob(handle string, security Security) (blob Blob) {
-	return Blob{
-		Url: url.URL{
-			Scheme:   apiURL.Scheme,
-			Host:     apiURL.Host,
-			Path:     path.Join("api", "file", handle),
-			RawQuery: security.toValues().Encode(),
-		}.String(),
+	blobUrl := url.URL{
+		Scheme:   apiURL.Scheme,
+		Host:     apiURL.Host,
+		Path:     path.Join("api", "file", handle),
+		RawQuery: security.toValues().Encode(),
 	}
+	return Blob{Url: blobUrl.String()}
 }
 
 // StoreOpts structure allows user to configure how to store the data.
