@@ -24,6 +24,8 @@ const (
 	ErrRemoteUrlUnreachable FPError = 152
 	ErrStatFileNotFound     FPError = 161
 	ErrStatFetchingMetadata FPError = 162
+	ErrRmFileCannotBeFound  FPError = 171
+	ErrRmStoreUnreachable   FPError = 172
 	ErrBadParameters        FPError = 400
 	ErrInvalidRequest       FPError = 403
 )
@@ -33,10 +35,12 @@ var errmsgs = map[FPError]string{
 	ErrRequestWebsiteFailed: "requested website  had an error",
 	ErrFileNotFound:         "file not found",
 	ErrGeneralReadError:     "general read error",
-	ErrFileStoreUnreachable: "the file store could not be reached",
-	ErrRemoteUrlUnreachable: "the remote URL could not be reached",
+	ErrFileStoreUnreachable: "file store could not be reached",
+	ErrRemoteUrlUnreachable: "remote URL could not be reached",
 	ErrStatFileNotFound:     "fetching metadata of non existing file",
 	ErrStatFetchingMetadata: "error fetching metadata",
+	ErrRmFileCannotBeFound:  "file cannot be found, and may have already been deleted",
+	ErrRmStoreUnreachable:   "underlying content store could not be reached",
 	ErrBadParameters:        "bad parameters were passed to the server",
 	ErrInvalidRequest:       "invalid request",
 }

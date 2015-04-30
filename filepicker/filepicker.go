@@ -285,3 +285,40 @@ func (c *Client) download(urlstr string) (resp *http.Response, err error) {
 	}
 	return
 }
+
+// RemoveOpts structure allows user to configure security policy when
+// removing data.
+type RemoveOpts struct {
+	// TODO : (ppknap)
+	Security
+}
+
+// toValues takes all non-zero values from provided RemoveOpts entity and puts
+// them to a url.Values object.
+func (ro *RemoveOpts) toValues() url.Values {
+	return toValues(*ro)
+}
+
+// Remove TODO : (ppknap)
+func (c *Client) Remove(src *Blob, opt *RemoveOpts) (err error) {
+	blobUrl, err := url.Parse(src.Url)
+	if err != nil {
+		return
+	}
+	values := opt.toValues()
+	values.Set("key", c.apiKey)
+	blobUrl.RawQuery = values.Encode()
+	req, err := http.NewRequest("DELETE", blobUrl.String(), nil)
+	if err != nil {
+		return
+	}
+	resp, err := c.Client.Do(req)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	if invalidResCode(resp.StatusCode) {
+		return FPError(resp.StatusCode)
+	}
+	return
+}
