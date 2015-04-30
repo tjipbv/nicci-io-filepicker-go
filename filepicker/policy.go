@@ -16,14 +16,14 @@ import (
 type Method string
 
 const (
-	Pick     = Method("pick")
-	Read     = Method("read")
-	Stat     = Method("stat")
-	Write    = Method("write")
-	Writeurl = Method("writeUrl")
-	Store    = Method("store")
-	Convert  = Method("convert")
-	Remove   = Method("remove")
+	MetPick     = Method("pick")
+	MetRead     = Method("read")
+	MetStat     = Method("stat")
+	MetWrite    = Method("write")
+	MetWriteurl = Method("writeUrl")
+	MetStore    = Method("store")
+	MetConvert  = Method("convert")
+	MetRemove   = Method("remove")
 )
 
 // TODO : (ppknap)

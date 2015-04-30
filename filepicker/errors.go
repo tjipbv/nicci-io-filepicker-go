@@ -22,17 +22,21 @@ const (
 	ErrGeneralReadError     FPError = 118
 	ErrFileStoreUnreachable FPError = 151
 	ErrRemoteUrlUnreachable FPError = 152
+	ErrStatFileNotFound     FPError = 161
+	ErrStatFetchingMetadata FPError = 162
 	ErrBadParameters        FPError = 400
 	ErrInvalidRequest       FPError = 403
 )
 
 var errmsgs = map[FPError]string{
 	ErrOtherDomainsCantRead: "requested website does not allow other domains to read data",
-	ErrRequestWebsiteFailed: "requested website  had an error"
+	ErrRequestWebsiteFailed: "requested website  had an error",
 	ErrFileNotFound:         "file not found",
 	ErrGeneralReadError:     "general read error",
 	ErrFileStoreUnreachable: "the file store could not be reached",
 	ErrRemoteUrlUnreachable: "the remote URL could not be reached",
+	ErrStatFileNotFound:     "fetching metadata of non existing file",
+	ErrStatFetchingMetadata: "error fetching metadata",
 	ErrBadParameters:        "bad parameters were passed to the server",
 	ErrInvalidRequest:       "invalid request",
 }

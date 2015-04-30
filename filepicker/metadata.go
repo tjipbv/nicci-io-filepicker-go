@@ -1,6 +1,9 @@
 package filepicker
 
-import "time"
+import (
+	"net/url"
+	"time"
+)
 
 // MetaTag TODO : (ppknap)
 type MetaTag string
@@ -22,10 +25,20 @@ const (
 // MetaOpts TODO : (ppknap)
 type MetaOpts struct {
 	// Tags TODO : (ppknap)
-	Tags []MetaTag
+	Tags []MetaTag `json:"tags,omitempty"`
 
 	// Security TODO : (ppknap)
 	Security
+}
+
+// toValues TODO : (ppknap)
+func (mo *MetaOpts) toValues() url.Values {
+	values := toValues(*mo)
+	values.Del("tags")
+	for _, tag := range mo.Tags {
+		values.Add(string(tag), "true")
+	}
+	return values
 }
 
 // Metadata TODO : (ppkanp)
@@ -75,7 +88,7 @@ func (md Metadata) Height() (height uint64, ok bool) {
 func (md Metadata) Uploaded() (uploaded time.Time, ok bool) {
 	if val, ok := md[string(TagUploaded)]; ok {
 		raw := int64(val.(float64))
-		return time.Unix(uraw/1000, uraw%1000), ok
+		return time.Unix(raw/1000, raw%1000), ok
 	}
 	return
 }

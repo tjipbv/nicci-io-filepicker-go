@@ -199,13 +199,13 @@ func (c *Client) newStoreURL(opt *StoreOpts) *url.URL {
 	if opt.Location != "" {
 		storage = opt.Location
 	}
-	vals := opt.toValues()
-	vals.Set("key", c.apiKey)
+	values := opt.toValues()
+	values.Set("key", c.apiKey)
 	return &url.URL{
 		Scheme:   apiURL.Scheme,
 		Host:     apiURL.Host,
 		Path:     path.Join("api", "store", string(storage)),
-		RawQuery: vals.Encode(),
+		RawQuery: values.Encode(),
 	}
 }
 
@@ -227,7 +227,7 @@ func toValues(val interface{}) url.Values {
 
 // DownloadTo TODO : (ppknap)
 func (c *Client) DownloadTo(src *Blob, dst io.Writer) (written int64, err error) {
-	resp, err := c.download(src)
+	resp, err := c.download(src.Url)
 	if err != nil {
 		return
 	}
@@ -237,7 +237,7 @@ func (c *Client) DownloadTo(src *Blob, dst io.Writer) (written int64, err error)
 
 // DownloadToFile TODO : (ppknap)
 func (c *Client) DownloadToFile(src *Blob, filedir string) (err error) {
-	resp, err := c.download(src)
+	resp, err := c.download(src.Url)
 	if err != nil {
 		return
 	}
@@ -258,8 +258,25 @@ func (c *Client) DownloadToFile(src *Blob, filedir string) (err error) {
 	return
 }
 
-func (c *Client) download(src *Blob) (resp *http.Response, err error) {
-	if resp, err = c.Client.Get(src.Url); err != nil {
+// Stat TODO : (ppknap)
+func (c *Client) Stat(src *Blob, opt *MetaOpts) (md Metadata, err error) {
+	blobUrl, err := url.Parse(src.Url)
+	if err != nil {
+		return
+	}
+	blobUrl.Path = path.Join(blobUrl.Path, "metadata")
+	blobUrl.RawQuery = opt.toValues().Encode()
+	resp, err := c.download(blobUrl.String())
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	md = make(Metadata)
+	return md, json.NewDecoder(resp.Body).Decode(&md)
+}
+
+func (c *Client) download(urlstr string) (resp *http.Response, err error) {
+	if resp, err = c.Client.Get(urlstr); err != nil {
 		return
 	}
 	if invalidResCode(resp.StatusCode) {
