@@ -25,7 +25,6 @@ func MockServer(t *testing.T, c *filepicker.Client, h http.HandlerFunc) *httptes
 	c.Client.Transport = &MockedTransport{
 		Transport: http.Transport{
 			Proxy: func(req *http.Request) (*url.URL, error) {
-				req.URL.Scheme = "http"
 				fmt.Println(*req)
 				fmt.Println(url.Parse(mockedServer.URL))
 				return url.Parse(mockedServer.URL)

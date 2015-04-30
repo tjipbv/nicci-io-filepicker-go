@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"path/filepath"
 )
 
 // FilepickerURL is a link to the filepicker.io service.
@@ -66,6 +67,15 @@ func newBlob(handle string, security Security) (blob Blob) {
 		RawQuery: security.toValues().Encode(),
 	}
 	return Blob{Url: blobUrl.String()}
+}
+
+// Handle TODO : (ppknap)
+func (b Blob) Handle() string {
+	blobUrl, err := url.Parse(b.Url)
+	if err != nil {
+		return ""
+	}
+	return path.Base(blobUrl.Path)
 }
 
 // StoreOpts structure allows user to configure how to store the data.
@@ -168,13 +178,13 @@ func (c *Client) Store(name string, opt StoreOpts) (blob Blob, err error) {
 // storeRes handles client response errors and if there are none, the function
 // reads response's Body and unmarshals it into Blob object.
 func storeRes(resp *http.Response, respErr error) (blob Blob, err error) {
-	switch {
-	case respErr != nil:
-		return blob, err
-	case invalidResCode(resp.StatusCode):
-		return blob, FPError(resp.StatusCode)
+	if respErr != nil {
+		return blob, respErr
 	}
 	defer resp.Body.Close()
+	if invalidResCode(resp.StatusCode) {
+		return blob, FPError(resp.StatusCode)
+	}
 	return blob, json.NewDecoder(resp.Body).Decode(&blob)
 }
 
@@ -212,4 +222,49 @@ func toValues(val interface{}) url.Values {
 		values.Set(k, fmt.Sprint(v))
 	}
 	return values
+}
+
+// DownloadTo TODO : (ppknap)
+func (c *Client) DownloadTo(src Blob, dst io.Writer) (written int64, err error) {
+	resp, err := c.download(src)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	return io.Copy(dst, resp.Body)
+}
+
+// DownloadToFile TODO : (ppknap)
+func (c *Client) DownloadToFile(src Blob, filedir string) (err error) {
+	fmt.Println(src)
+	resp, err := c.download(src)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	directory, filename := filepath.Split(filedir)
+	if filename == "" || filename == "." {
+		if filename = resp.Header.Get("X-File-Name"); filename == "" {
+			return fmt.Errorf("filepicker: invalid file name (handle %q)",
+				src.Handle())
+		}
+	}
+	file, err := os.Create(filepath.Clean(filepath.Join(directory, filename)))
+	if err != nil {
+		return
+	}
+	defer file.Close()
+	_, err = io.Copy(file, resp.Body)
+	return
+}
+
+func (c *Client) download(src Blob) (resp *http.Response, err error) {
+	if resp, err = c.Client.Get(src.Url); err != nil {
+		return
+	}
+	if invalidResCode(resp.StatusCode) {
+		resp.Body.Close()
+		return nil, FPError(resp.StatusCode)
+	}
+	return
 }

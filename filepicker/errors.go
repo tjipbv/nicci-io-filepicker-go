@@ -12,7 +12,7 @@ func (e FPError) Error() string {
 	if msg, ok := errmsgs[e]; ok {
 		return prefix + msg
 	}
-	return prefix + "unknown error"
+	return prefix + "connection error"
 }
 
 const (
