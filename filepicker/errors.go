@@ -16,6 +16,8 @@ func (e FPError) Error() string {
 }
 
 const (
+	ErrOtherDomainsCantRead FPError = 113
+	ErrRequestWebsiteFailed FPError = 114
 	ErrFileNotFound         FPError = 115
 	ErrGeneralReadError     FPError = 118
 	ErrFileStoreUnreachable FPError = 151
@@ -25,6 +27,8 @@ const (
 )
 
 var errmsgs = map[FPError]string{
+	ErrOtherDomainsCantRead: "requested website does not allow other domains to read data",
+	ErrRequestWebsiteFailed: "requested website  had an error"
 	ErrFileNotFound:         "file not found",
 	ErrGeneralReadError:     "general read error",
 	ErrFileStoreUnreachable: "the file store could not be reached",
