@@ -49,28 +49,28 @@ type Blob struct {
 }
 
 // NewBlob TODO : (ppknap)
-func NewBlob(handle string) (blob Blob) {
+func NewBlob(handle string) *Blob {
 	return newBlob(handle, Security{})
 }
 
 // NewBlobSecurity TODO : (ppknap)
-func NewBlobSecurity(handle string, security Security) (blob Blob) {
+func NewBlobSecurity(handle string, security Security) *Blob {
 	return newBlob(handle, security)
 }
 
 // NewBlob TODO : (ppknap)
-func newBlob(handle string, security Security) (blob Blob) {
+func newBlob(handle string, security Security) *Blob {
 	blobUrl := url.URL{
 		Scheme:   apiURL.Scheme,
 		Host:     apiURL.Host,
 		Path:     path.Join("api", "file", handle),
 		RawQuery: security.toValues().Encode(),
 	}
-	return Blob{Url: blobUrl.String()}
+	return &Blob{Url: blobUrl.String()}
 }
 
 // Handle TODO : (ppknap)
-func (b Blob) Handle() string {
+func (b *Blob) Handle() string {
 	blobUrl, err := url.Parse(b.Url)
 	if err != nil {
 		return ""
@@ -147,7 +147,7 @@ func newClient(apiKey string, storage Storage) *Client {
 
 // StoreURL TODO : (ppknap)
 // TODO : mv url storeable(?)
-func (c *Client) StoreURL(dataUrl string, opt StoreOpts) (blob Blob, err error) {
+func (c *Client) StoreURL(dataUrl string, opt StoreOpts) (blob *Blob, err error) {
 	values := url.Values{}
 	values.Set("url", dataUrl)
 	return storeRes(c.Client.PostForm(c.newStoreURL(&opt).String(), values))
@@ -155,7 +155,7 @@ func (c *Client) StoreURL(dataUrl string, opt StoreOpts) (blob Blob, err error) 
 
 // Store TODO : (ppknap)
 // TODO : mv path storeable(?)
-func (c *Client) Store(name string, opt StoreOpts) (blob Blob, err error) {
+func (c *Client) Store(name string, opt StoreOpts) (blob *Blob, err error) {
 	buff := &bytes.Buffer{}
 	wr := multipart.NewWriter(buff)
 	file, err := os.Open(name)
@@ -177,15 +177,16 @@ func (c *Client) Store(name string, opt StoreOpts) (blob Blob, err error) {
 
 // storeRes handles client response errors and if there are none, the function
 // reads response's Body and unmarshals it into Blob object.
-func storeRes(resp *http.Response, respErr error) (blob Blob, err error) {
+func storeRes(resp *http.Response, respErr error) (blob *Blob, err error) {
 	if respErr != nil {
-		return blob, respErr
+		return nil, respErr
 	}
 	defer resp.Body.Close()
 	if invalidResCode(resp.StatusCode) {
-		return blob, FPError(resp.StatusCode)
+		return nil, FPError(resp.StatusCode)
 	}
-	return blob, json.NewDecoder(resp.Body).Decode(&blob)
+	blob = &Blob{}
+	return blob, json.NewDecoder(resp.Body).Decode(blob)
 }
 
 // invalidResCode returns true when response code is not valid.
@@ -225,7 +226,7 @@ func toValues(val interface{}) url.Values {
 }
 
 // DownloadTo TODO : (ppknap)
-func (c *Client) DownloadTo(src Blob, dst io.Writer) (written int64, err error) {
+func (c *Client) DownloadTo(src *Blob, dst io.Writer) (written int64, err error) {
 	resp, err := c.download(src)
 	if err != nil {
 		return
@@ -235,8 +236,7 @@ func (c *Client) DownloadTo(src Blob, dst io.Writer) (written int64, err error) 
 }
 
 // DownloadToFile TODO : (ppknap)
-func (c *Client) DownloadToFile(src Blob, filedir string) (err error) {
-	fmt.Println(src)
+func (c *Client) DownloadToFile(src *Blob, filedir string) (err error) {
 	resp, err := c.download(src)
 	if err != nil {
 		return
@@ -258,7 +258,7 @@ func (c *Client) DownloadToFile(src Blob, filedir string) (err error) {
 	return
 }
 
-func (c *Client) download(src Blob) (resp *http.Response, err error) {
+func (c *Client) download(src *Blob) (resp *http.Response, err error) {
 	if resp, err = c.Client.Get(src.Url); err != nil {
 		return
 	}
