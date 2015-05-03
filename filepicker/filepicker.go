@@ -50,21 +50,10 @@ type Blob struct {
 
 // NewBlob TODO : (ppknap)
 func NewBlob(handle string) *Blob {
-	return newBlob(handle, Security{})
-}
-
-// NewBlobSecurity TODO : (ppknap)
-func NewBlobSecurity(handle string, security Security) *Blob {
-	return newBlob(handle, security)
-}
-
-// NewBlob TODO : (ppknap)
-func newBlob(handle string, security Security) *Blob {
 	blobUrl := url.URL{
-		Scheme:   apiURL.Scheme,
-		Host:     apiURL.Host,
-		Path:     path.Join("api", "file", handle),
-		RawQuery: security.toValues().Encode(),
+		Scheme: apiURL.Scheme,
+		Host:   apiURL.Host,
+		Path:   path.Join("api", "file", handle),
 	}
 	return &Blob{Url: blobUrl.String()}
 }
@@ -196,10 +185,13 @@ func invalidResCode(code int) bool {
 
 func (c *Client) newStoreURL(opt *StoreOpts) *url.URL {
 	storage := c.storage
-	if opt.Location != "" {
-		storage = opt.Location
+	values := url.Values{}
+	if opt != nil {
+		values = opt.toValues()
+		if opt.Location != "" {
+			storage = opt.Location
+		}
 	}
-	values := opt.toValues()
 	values.Set("key", c.apiKey)
 	return &url.URL{
 		Scheme:   apiURL.Scheme,
@@ -225,8 +217,26 @@ func toValues(val interface{}) url.Values {
 	return values
 }
 
+// DownloadOpts structure allows user to configure security policy when
+// removing data.
+type DownloadOpts struct {
+	// Base64Decode indicates whether the data should be first decoded from
+	// base64 before being written to the file.
+	Base64Decode bool `json:"base64decode,omitempty"`
+
+	// TODO : (ppknap)
+	Security
+}
+
+// toValues takes all non-zero values from provided DownloadOpts entity and puts
+// them to a url.Values object.
+func (do *DownloadOpts) toValues() url.Values {
+	return toValues(*do)
+}
+
 // DownloadTo TODO : (ppknap)
-func (c *Client) DownloadTo(src *Blob, dst io.Writer) (written int64, err error) {
+func (c *Client) DownloadTo(src *Blob, opt *DownloadOpts, dst io.Writer) (
+	written int64, err error) {
 	resp, err := c.download(src.Url)
 	if err != nil {
 		return
@@ -275,7 +285,13 @@ func (c *Client) Stat(src *Blob, opt *MetaOpts) (md Metadata, err error) {
 	return md, json.NewDecoder(resp.Body).Decode(&md)
 }
 
-func (c *Client) download(urlstr string) (resp *http.Response, err error) {
+func (c *Client) download(
+	src *Blob, opt *DownloadOpts) (resp *http.Response, err error) {
+	blobUrl, err := url.Parse(src.Url)
+	if err != nil {
+		return
+	}
+	blobUrl.RawQuery = opt.toValues().Encode()
 	if resp, err = c.Client.Get(urlstr); err != nil {
 		return
 	}

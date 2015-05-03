@@ -46,5 +46,5 @@ func TestTmp(t *testing.T) {
 	mock := MockServer(t, client, printerHandle)
 	defer mock.Close()
 
-	client.StoreURL("https://url.com/sth", filepicker.StoreOpts{})
+	client.StoreURL("https://url.com/sth", nil)
 }
