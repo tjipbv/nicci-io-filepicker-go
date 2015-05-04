@@ -2,6 +2,7 @@ package filepicker_test
 
 import (
 	"log"
+	"time"
 
 	"github.com/filepicker/filepicker-go/filepicker"
 )
@@ -10,12 +11,11 @@ const ApiKey = "put_your_api_key_here"
 
 // This example shows how to send URLs content directly to your storage bucket.
 func ExampleStoreURL() {
-	const dataUrl = "https://d3urzlae3olibs.cloudfront.net/watermark.png"
-
 	// Create a new Filepicker.io client with S3 storage set by default.
 	cl := filepicker.NewClient(ApiKey)
 
 	// Store URL content using default options.
+	const dataUrl = "https://d3urzlae3olibs.cloudfront.net/watermark.png"
 	blob, err := cl.StoreURL(dataUrl, nil)
 	if err != nil {
 		log.Fatalf("cannot store file %q: %v\n", dataUrl, err)
@@ -24,12 +24,10 @@ func ExampleStoreURL() {
 }
 
 func ExampleDownloadToFile() {
-	const fileHandle = "hFHUCB3iTxyMzseuWOgG"
-
 	// Create a new Filepicker.io client with S3 storage set by default.
 	cl := filepicker.NewClient(ApiKey)
 
-	blob := filepicker.NewBlob(fileHandle)
+	blob := filepicker.NewBlob("hFHUCB3iTxyMzseuWOgG")
 	if err := cl.DownloadToFile(blob, nil, "."); err != nil {
 		log.Fatalf("cannot download file: %v\n", err)
 	}
@@ -37,8 +35,6 @@ func ExampleDownloadToFile() {
 }
 
 func ExampleStat() {
-	const fileHandle = "hFHUCB3iTxyMzseuWOgG"
-
 	// Create a new Filepicker.io client with S3 storage set by default.
 	cl := filepicker.NewClient(ApiKey)
 
@@ -46,7 +42,7 @@ func ExampleStat() {
 		Tags: []filepicker.MetaTag{filepicker.TagMd5Hash},
 	}
 
-	meta, err := cl.Stat(filepicker.NewHandle(fileHandle), options)
+	meta, err := cl.Stat(filepicker.NewHandle("hFHUCB3iTxyMzseuWOgG"), options)
 	if err != nil {
 		log.Println("cannot stat file:", err)
 	}
@@ -56,4 +52,19 @@ func ExampleStat() {
 		md5hash = md5
 	}
 	log.Println("MD5Hash:", md5hash)
+}
+
+func ExampleMakeSecurity() {
+	options := &filepicker.PolicyOpts{
+		Expiry: time.Unix(1508141504, 0),
+		Handle: "KW9EJhYtS6y48Whm2S6D",
+	}
+
+	policy, err := filepicker.MakePolicy(options)
+	if err != nil {
+		log.Fatalln("cannot create policy:", err)
+	}
+
+	security := filepicker.MakeSecurity("Z3IYZSH2UJA7VN3QYFVSVCF7PI", policy)
+	log.Println("P: %s\nS: %s\n", security.Policy, security.Signature)
 }
