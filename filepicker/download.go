@@ -9,8 +9,7 @@ import (
 	"path/filepath"
 )
 
-// DownloadOpts structure allows user to configure security policy when
-// removing data.
+// DownloadOpts TODO
 type DownloadOpts struct {
 	// Base64Decode indicates whether the data should be first decoded from
 	// base64 before being written to the file.
@@ -31,7 +30,7 @@ func (do *DownloadOpts) toValues() url.Values {
 // DownloadTo TODO : (ppknap)
 func (c *Client) DownloadTo(src *Blob, opt *DownloadOpts, dst io.Writer) (
 	written int64, err error) {
-	resp, err := c.download(src.Url)
+	resp, err := c.download(src.Url, opt)
 	if err != nil {
 		return
 	}
@@ -40,8 +39,8 @@ func (c *Client) DownloadTo(src *Blob, opt *DownloadOpts, dst io.Writer) (
 }
 
 // DownloadToFile TODO : (ppknap)
-func (c *Client) DownloadToFile(src *Blob, filedir string) (err error) {
-	resp, err := c.download(src.Url)
+func (c *Client) DownloadToFile(src *Blob, opt *DownloadOpts, filedir string) (err error) {
+	resp, err := c.download(src.Url, opt)
 	if err != nil {
 		return
 	}
@@ -62,14 +61,15 @@ func (c *Client) DownloadToFile(src *Blob, filedir string) (err error) {
 	return
 }
 
-func (c *Client) download(
-	src *Blob, opt *DownloadOpts) (resp *http.Response, err error) {
+func (c *Client) download(src *Blob, opt *DownloadOpts) (resp *http.Response, err error) {
 	blobUrl, err := url.Parse(src.Url)
 	if err != nil {
 		return
 	}
-	blobUrl.RawQuery = opt.toValues().Encode()
-	if resp, err = c.Client.Get(urlstr); err != nil {
+	if opt != nil {
+		blobUrl.RawQuery = opt.toValues().Encode()
+	}
+	if resp, err = c.Client.Get(blobUrl.String()); err != nil {
 		return
 	}
 	if invalidResCode(resp.StatusCode) {

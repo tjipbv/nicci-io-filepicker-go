@@ -11,7 +11,7 @@ import (
 	"path"
 )
 
-// StoreOpts structure allows user to configure how to store the data.
+// StoreOpts structure allows the user to configure how to store the data.
 type StoreOpts struct {
 	// Filename specifies the name of the stored file. If this variable is
 	// empty, filepicker service will choose the label automatically.

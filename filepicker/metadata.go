@@ -46,7 +46,7 @@ func (mo *MetaOpts) toValues() url.Values {
 // Metadata TODO : (ppkanp)
 type Metadata map[string]interface{}
 
-// Size TODO : (ppknap)
+// Size returns
 func (md Metadata) Size() (size uint64, ok bool) {
 	if val, ok := md[string(TagSize)]; ok {
 		return uint64(val.(float64)), ok

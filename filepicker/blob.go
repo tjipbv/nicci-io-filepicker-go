@@ -17,10 +17,10 @@ type Blob struct {
 	Mimetype string `json:"type,omitempty"`
 
 	// Size is the size of the file in bytes. When this value is not available,
-	// you can get it by using Client.Stat method.
+	// the user can get it by using Client.Stat method.
 	Size uint64 `json:"size,omitempty"`
 
-	// Key shows where in the file storage the file was put.
+	// Key shows where in the file storage the data was put.
 	Key string `json:"key,omitempty"`
 
 	// Container points to the storage in which the file was put.

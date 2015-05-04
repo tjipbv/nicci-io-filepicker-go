@@ -23,3 +23,16 @@ func ExampleStoreURL() {
 	}
 	log.Printf("file %q stored: %q\n", dataUrl, blob.Url)
 }
+
+func ExampleDownloadToFile() {
+	const fileHandle = "hFHUCB3iTxyMzseuWOgG"
+
+	// Create a new Filepicker.io client with S3 storage set by default.
+	cl := filepicker.NewClient(apiKey)
+
+	blob := filepicker.NewBlob(fileHandle)
+	if err := cl.DownloadToFile(blob, nil, "."); err != nil {
+		log.Fatalf("cannot download file with handle %s: %v\n", fileHandle, err)
+	}
+	log.Printf("file downloaded!")
+}
