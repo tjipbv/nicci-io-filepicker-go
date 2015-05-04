@@ -141,13 +141,18 @@ func (c *Client) Stat(src *Blob, opt *MetaOpts) (md Metadata, err error) {
 	if err != nil {
 		return
 	}
+	if opt != nil {
+		blobUrl.RawQuery = opt.toValues().Encode()
+	}
 	blobUrl.Path = path.Join(blobUrl.Path, "metadata")
-	blobUrl.RawQuery = opt.toValues().Encode()
-	resp, err := c.download(blobUrl.String())
+	resp, err := c.Client.Get(blobUrl.String())
 	if err != nil {
 		return
 	}
 	defer resp.Body.Close()
+	if invalidResCode(resp.StatusCode) {
+		return nil, FPError(resp.StatusCode)
+	}
 	md = make(Metadata)
 	return md, json.NewDecoder(resp.Body).Decode(&md)
 }

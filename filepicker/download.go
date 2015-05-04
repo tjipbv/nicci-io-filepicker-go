@@ -30,7 +30,7 @@ func (do *DownloadOpts) toValues() url.Values {
 // DownloadTo TODO : (ppknap)
 func (c *Client) DownloadTo(src *Blob, opt *DownloadOpts, dst io.Writer) (
 	written int64, err error) {
-	resp, err := c.download(src.Url, opt)
+	resp, err := c.download(src, opt)
 	if err != nil {
 		return
 	}
@@ -40,7 +40,7 @@ func (c *Client) DownloadTo(src *Blob, opt *DownloadOpts, dst io.Writer) (
 
 // DownloadToFile TODO : (ppknap)
 func (c *Client) DownloadToFile(src *Blob, opt *DownloadOpts, filedir string) (err error) {
-	resp, err := c.download(src.Url, opt)
+	resp, err := c.download(src, opt)
 	if err != nil {
 		return
 	}
