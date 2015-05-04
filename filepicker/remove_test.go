@@ -1,0 +1,77 @@
+package filepicker_test
+
+import (
+	"io/ioutil"
+	"net/http"
+	"testing"
+
+	"github.com/filepicker/filepicker-go/filepicker"
+)
+
+func TestRemove(t *testing.T) {
+	tests := []struct {
+		Opt *filepicker.RemoveOpts
+		Url string
+	}{
+		{
+			Opt: nil,
+			Url: `http://www.filepicker.io/api/file/2HHH3?key=0KKK1`,
+		},
+		{
+			Opt: &filepicker.RemoveOpts{},
+			Url: `http://www.filepicker.io/api/file/2HHH3?key=0KKK1`,
+		},
+		{
+			Opt: &filepicker.RemoveOpts{
+				Security: dummySecurity,
+			},
+			Url: `http://www.filepicker.io/api/file/2HHH3?key=0KKK1&policy=P&signature=S`,
+		},
+	}
+
+	var reqUrl, reqMethod, reqBody string
+	removeHandle := func(w http.ResponseWriter, req *http.Request) {
+		body, _ := ioutil.ReadAll(req.Body)
+		reqBody = string(body)
+		reqUrl = req.URL.String()
+		reqMethod = req.Method
+	}
+
+	blob := filepicker.NewBlob(FakeHandle)
+	client := filepicker.NewClient(FakeApiKey)
+
+	mock := MockServer(t, client, removeHandle)
+	defer mock.Close()
+
+	for _, test := range tests {
+		if err := client.Remove(blob, test.Opt); err != nil {
+			t.Errorf(`want err == nil, got %v`, err)
+		}
+		if test.Url != reqUrl {
+			t.Errorf(`want test.Url == reqUrl, got %q != %q`, test.Url, reqUrl)
+		}
+		if reqMethod != `DELETE` {
+			t.Errorf(`want reqMethod == DELETE, got %s`, reqMethod)
+		}
+		if reqBody != `` {
+			t.Errorf(`want reqBody == "", got %q`, reqBody)
+		}
+	}
+}
+
+func TestRemoveError(t *testing.T) {
+	const connerr filepicker.FPError = filepicker.ErrRmFileCannotBeFound
+	removeHandle := func(w http.ResponseWriter, req *http.Request) {
+		http.Error(w, connerr.Error(), int(connerr))
+	}
+
+	blob := filepicker.NewBlob(FakeHandle)
+	client := filepicker.NewClient(FakeApiKey)
+
+	mock := MockServer(t, client, removeHandle)
+	defer mock.Close()
+
+	if err := client.Remove(blob, nil); err != connerr {
+		t.Errorf("want err == connerr(%v), got %v", connerr, err)
+	}
+}

@@ -5,8 +5,8 @@ import (
 	"net/url"
 )
 
-// RemoveOpts structure allows user to set additional options when removing the
-// data.
+// RemoveOpts structure allows the user to set additional options when removing
+// the data.
 type RemoveOpts struct {
 	// Security stores Filepicker.io policy and signature members. If you enable
 	// security option in your developer portal, these values must be set in

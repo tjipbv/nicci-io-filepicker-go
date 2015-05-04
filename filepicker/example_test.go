@@ -42,7 +42,7 @@ func ExampleStat() {
 		Tags: []filepicker.MetaTag{filepicker.TagMd5Hash},
 	}
 
-	meta, err := cl.Stat(filepicker.NewHandle("hFHUCB3iTxyMzseuWOgG"), options)
+	meta, err := cl.Stat(filepicker.NewBlob("hFHUCB3iTxyMzseuWOgG"), options)
 	if err != nil {
 		log.Println("cannot stat file:", err)
 	}

@@ -27,7 +27,7 @@ const (
 )
 
 // ConvertStoreOpt TODO : (ppknap)
-type ConvertOpt struct {
+type ConvertOpts struct {
 	// Width of the inputted image, in pixels. This property is ignored when the
 	// file is not an image.
 	Width int `json:"width,omitempty"`
@@ -83,15 +83,15 @@ type ConvertOpt struct {
 
 // toValues takes all non-zero values from provided ConvertOpt instance and puts
 // them to a url.Values object.
-func (co *ConvertOpt) toValues() url.Values {
+func (co *ConvertOpts) toValues() url.Values {
 	return toValues(*co)
 }
 
 // ConvertAndStore TODO : (ppknap)
-func (c *Client) ConvertAndStore(src *Blob, opt *ConvertOpt) (*Blob, error) {
+func (c *Client) ConvertAndStore(src *Blob, opt *ConvertOpts) (*Blob, error) {
 	blobUrl, err := url.Parse(src.Url)
 	if err != nil {
-		return
+		return nil, err
 	}
 	blobUrl.Path = path.Join(blobUrl.Path, "convert")
 	if opt == nil {

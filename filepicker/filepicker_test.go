@@ -11,6 +11,16 @@ import (
 	"github.com/filepicker/filepicker-go/filepicker"
 )
 
+const (
+	FakeApiKey = "0KKK1"
+	FakeHandle = "2HHH3"
+)
+
+var dummySecurity = filepicker.Security{
+	Policy:    "P",
+	Signature: "S",
+}
+
 type MockedTransport struct {
 	Transport http.Transport
 }
@@ -42,7 +52,7 @@ func TestTmp(t *testing.T) {
 		fmt.Println(string(byteData))
 	}
 
-	client := filepicker.NewClient("AAA")
+	client := filepicker.NewClient(FakeApiKey)
 	mock := MockServer(t, client, printerHandle)
 	defer mock.Close()
 
