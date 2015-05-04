@@ -2,7 +2,7 @@ package filepicker
 
 import "strconv"
 
-// FPError represents an error which could be produced by filepicker client.
+// FPError represents an error which could be returned from filepicker.io service.
 type FPError int
 
 // Error satisfies builtin.error interface. It prints the error string with

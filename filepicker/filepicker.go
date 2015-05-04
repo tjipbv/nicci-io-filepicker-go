@@ -1,112 +1,34 @@
 package filepicker
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
-	"mime/multipart"
 	"net/http"
 	"net/url"
-	"os"
-	"path"
-	"path/filepath"
 )
-
-// FilepickerURL is a link to the filepicker.io service.
-const FilepickerURL = "https://www.filepicker.io/"
-
-// apiURL is a URL representation of FilepickerURL address.
-var apiURL *url.URL
 
 func init() {
 	var err error
 	if apiURL, err = url.Parse(FilepickerURL); err != nil {
-		panic("filepicker: invalid filepicker address " + FilepickerURL)
+		panic("filepicker: invalid filepicker.io service address " + FilepickerURL)
 	}
 }
 
-// Storage represents cloud storage services supported by filepicker client.
+// FilepickerURL is a link to filepicker.io service.
+const FilepickerURL = "https://www.filepicker.io/"
+
+// apiURL is a url.URL type representation of FilepickerURL address.
+var apiURL *url.URL
+
+// Storage represents cloud storage services supported by filepicker.io client.
 type Storage string
 
 const (
-	S3        = Storage("S3")        // Amazon Simple Storage Service.
-	Azure     = Storage("azure")     // Microsoft Azure storage.
+	S3        = Storage("S3")        // Amazon S3 bucket.
+	Azure     = Storage("azure")     // Azure blob storage container.
 	Dropbox   = Storage("dropbox")   // Dropbox folder.
-	Rackspace = Storage("rackspace") // Rackspace Cloud files.
+	Rackspace = Storage("rackspace") // Rackspace cloud files container.
 )
-
-// Blob TODO : (ppknap)
-type Blob struct {
-	Url       string  `json:"url,omitempty"`
-	Filename  string  `json:"filename,omitempty"`
-	Mimetype  string  `json:"type,omitempty"`
-	Size      uint64  `json:"size,omitempty"`
-	Key       string  `json:"key,omitempty"`
-	Container Storage `json:"container,omitempty"`
-	Writeable bool    `json:"isWriteable,omitempty"`
-	Path      string  `json:"path,omitempty"`
-}
-
-// NewBlob TODO : (ppknap)
-func NewBlob(handle string) *Blob {
-	blobUrl := url.URL{
-		Scheme: apiURL.Scheme,
-		Host:   apiURL.Host,
-		Path:   path.Join("api", "file", handle),
-	}
-	return &Blob{Url: blobUrl.String()}
-}
-
-// Handle TODO : (ppknap)
-func (b *Blob) Handle() string {
-	blobUrl, err := url.Parse(b.Url)
-	if err != nil {
-		return ""
-	}
-	return path.Base(blobUrl.Path)
-}
-
-// StoreOpts structure allows user to configure how to store the data.
-type StoreOpts struct {
-	// Filename specifies the name of the stored file. If this variable is
-	// empty, filepicker's server will choose the label automatically.
-	Filename string `json:"filename,omitempty"`
-
-	// Mimetype specifies the type of the stored file.
-	Mimetype string `json:"mimetype,omitempty"`
-
-	// Location contains the name of file storage service which will be used to
-	// store a file. If this field is not set, filepicker client will use Simple
-	// Storage Service (S3).
-	Location Storage `json:"location,omitempty"`
-
-	// Path to store the file at within the specified file store. If the
-	// provided path ends in a '/', it will be treated as a folder.
-	Path string `json:"path,omitempty"`
-
-	// Container or a bucket in the specified file store where the file should
-	// end up. If this parameter is omitted, the file is stored in the default
-	// container specified in the user's developer portal.
-	Container string `json:"container,omitempty"`
-
-	// Base64Decode indicates whether the data should be first decoded from
-	// base64 before being written to the file.
-	Base64Decode bool `json:"base64decode,omitempty"`
-
-	// Access allows to use direct links to underlying file store service.
-	// TODO : make type
-	Access string `json:"access,omitempty"`
-
-	// TODO : (ppknap)
-	Security
-}
-
-// toValues takes all non-zero values from provided StoreOpts entity and puts
-// them to a url.Values object.
-func (so *StoreOpts) toValues() url.Values {
-	return toValues(*so)
-}
 
 // Client TODO : (ppknap)
 type Client struct {
@@ -134,71 +56,9 @@ func newClient(apiKey string, storage Storage) *Client {
 	}
 }
 
-// StoreURL TODO : (ppknap)
-// TODO : mv url storeable(?)
-func (c *Client) StoreURL(dataUrl string, opt *StoreOpts) (blob *Blob, err error) {
-	values := url.Values{}
-	values.Set("url", dataUrl)
-	return storeRes(c.Client.PostForm(c.newStoreURL(opt).String(), values))
-}
-
-// Store TODO : (ppknap)
-// TODO : mv path storeable(?)
-func (c *Client) Store(name string, opt *StoreOpts) (blob *Blob, err error) {
-	buff := &bytes.Buffer{}
-	wr := multipart.NewWriter(buff)
-	file, err := os.Open(name)
-	if err != nil {
-		return
-	}
-	defer file.Close()
-	mimewr, err := wr.CreateFormFile("fileUpload", name)
-	if err != nil {
-		return
-	}
-	if _, err = io.Copy(mimewr, file); err != nil {
-		return
-	}
-	content := wr.FormDataContentType()
-	wr.Close()
-	return storeRes(c.Client.Post(c.newStoreURL(opt).String(), content, buff))
-}
-
-// storeRes handles client response errors and if there are none, the function
-// reads response's Body and unmarshals it into Blob object.
-func storeRes(resp *http.Response, respErr error) (blob *Blob, err error) {
-	if respErr != nil {
-		return nil, respErr
-	}
-	defer resp.Body.Close()
-	if invalidResCode(resp.StatusCode) {
-		return nil, FPError(resp.StatusCode)
-	}
-	blob = &Blob{}
-	return blob, json.NewDecoder(resp.Body).Decode(blob)
-}
-
 // invalidResCode returns true when response code is not valid.
 func invalidResCode(code int) bool {
 	return code != http.StatusOK
-}
-
-func (c *Client) newStoreURL(opt *StoreOpts) *url.URL {
-	storage := c.storage
-	values := url.Values{}
-	if opt != nil {
-		values = opt.toValues()
-		if opt.Location != "" {
-			storage = opt.Location
-		}
-	}
-	values.Set("key", c.apiKey)
-	return &url.URL{
-		Scheme:   apiURL.Scheme,
-		Host:     apiURL.Host,
-		Path:     path.Join("api", "store", string(storage)),
-		RawQuery: values.Encode(),
-	}
 }
 
 // toValues takes all non-zero values from provided interface and puts them to
@@ -215,126 +75,4 @@ func toValues(val interface{}) url.Values {
 		values.Set(k, fmt.Sprint(v))
 	}
 	return values
-}
-
-// DownloadOpts structure allows user to configure security policy when
-// removing data.
-type DownloadOpts struct {
-	// Base64Decode indicates whether the data should be first decoded from
-	// base64 before being written to the file.
-	Base64Decode bool `json:"base64decode,omitempty"`
-
-	// TODO : (ppknap)
-	Security
-}
-
-// toValues takes all non-zero values from provided DownloadOpts entity and puts
-// them to a url.Values object.
-func (do *DownloadOpts) toValues() url.Values {
-	return toValues(*do)
-}
-
-// DownloadTo TODO : (ppknap)
-func (c *Client) DownloadTo(src *Blob, opt *DownloadOpts, dst io.Writer) (
-	written int64, err error) {
-	resp, err := c.download(src.Url)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	return io.Copy(dst, resp.Body)
-}
-
-// DownloadToFile TODO : (ppknap)
-func (c *Client) DownloadToFile(src *Blob, filedir string) (err error) {
-	resp, err := c.download(src.Url)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	directory, filename := filepath.Split(filedir)
-	if filename == "" || filename == "." {
-		if filename = resp.Header.Get("X-File-Name"); filename == "" {
-			return fmt.Errorf("filepicker: invalid file name (handle %q)",
-				src.Handle())
-		}
-	}
-	file, err := os.Create(filepath.Clean(filepath.Join(directory, filename)))
-	if err != nil {
-		return
-	}
-	defer file.Close()
-	_, err = io.Copy(file, resp.Body)
-	return
-}
-
-// Stat TODO : (ppknap)
-func (c *Client) Stat(src *Blob, opt *MetaOpts) (md Metadata, err error) {
-	blobUrl, err := url.Parse(src.Url)
-	if err != nil {
-		return
-	}
-	blobUrl.Path = path.Join(blobUrl.Path, "metadata")
-	blobUrl.RawQuery = opt.toValues().Encode()
-	resp, err := c.download(blobUrl.String())
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	md = make(Metadata)
-	return md, json.NewDecoder(resp.Body).Decode(&md)
-}
-
-func (c *Client) download(
-	src *Blob, opt *DownloadOpts) (resp *http.Response, err error) {
-	blobUrl, err := url.Parse(src.Url)
-	if err != nil {
-		return
-	}
-	blobUrl.RawQuery = opt.toValues().Encode()
-	if resp, err = c.Client.Get(urlstr); err != nil {
-		return
-	}
-	if invalidResCode(resp.StatusCode) {
-		resp.Body.Close()
-		return nil, FPError(resp.StatusCode)
-	}
-	return
-}
-
-// RemoveOpts structure allows user to configure security policy when
-// removing data.
-type RemoveOpts struct {
-	// TODO : (ppknap)
-	Security
-}
-
-// toValues takes all non-zero values from provided RemoveOpts entity and puts
-// them to a url.Values object.
-func (ro *RemoveOpts) toValues() url.Values {
-	return toValues(*ro)
-}
-
-// Remove TODO : (ppknap)
-func (c *Client) Remove(src *Blob, opt *RemoveOpts) (err error) {
-	blobUrl, err := url.Parse(src.Url)
-	if err != nil {
-		return
-	}
-	values := opt.toValues()
-	values.Set("key", c.apiKey)
-	blobUrl.RawQuery = values.Encode()
-	req, err := http.NewRequest("DELETE", blobUrl.String(), nil)
-	if err != nil {
-		return
-	}
-	resp, err := c.Client.Do(req)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	if invalidResCode(resp.StatusCode) {
-		return FPError(resp.StatusCode)
-	}
-	return
 }

@@ -1,7 +1,9 @@
 package filepicker
 
 import (
+	"encoding/json"
 	"net/url"
+	"path"
 	"time"
 )
 
@@ -131,4 +133,21 @@ func (md Metadata) Container() (container string, ok bool) {
 		return val.(string), ok
 	}
 	return
+}
+
+// Stat TODO : (ppknap)
+func (c *Client) Stat(src *Blob, opt *MetaOpts) (md Metadata, err error) {
+	blobUrl, err := url.Parse(src.Url)
+	if err != nil {
+		return
+	}
+	blobUrl.Path = path.Join(blobUrl.Path, "metadata")
+	blobUrl.RawQuery = opt.toValues().Encode()
+	resp, err := c.download(blobUrl.String())
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	md = make(Metadata)
+	return md, json.NewDecoder(resp.Body).Decode(&md)
 }
