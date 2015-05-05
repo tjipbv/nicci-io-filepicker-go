@@ -1,9 +1,6 @@
 package filepicker_test
 
 import (
-	"encoding/json"
-	"io/ioutil"
-	"net/http"
 	"net/url"
 	"os"
 	"testing"
@@ -12,7 +9,6 @@ import (
 )
 
 func TestWrite(t *testing.T) {
-	var testCounter int
 	tests := []struct {
 		Src *filepicker.Blob
 		Opt *filepicker.WriteOpts
@@ -44,25 +40,9 @@ func TestWrite(t *testing.T) {
 	defer os.Remove(filename)
 
 	var reqUrl, reqMethod, reqBody string
-	writeHandle := func(w http.ResponseWriter, req *http.Request) {
-		body, _ := ioutil.ReadAll(req.Body)
-		reqBody = string(body)
-		reqUrl = req.URL.String()
-		reqMethod = req.Method
-		blob := &filepicker.Blob{}
-		data, err := json.Marshal(blob)
-		testCounter++
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		if _, err := w.Write(data); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	}
-
+	handler := testHandle(&reqUrl, &reqMethod, &reqBody)
 	client := filepicker.NewClient(FakeApiKey)
-	mock := MockServer(t, client, writeHandle)
+	mock := MockServer(t, client, handler)
 	defer mock.Close()
 
 	for _, test := range tests {
@@ -83,10 +63,10 @@ func TestWrite(t *testing.T) {
 }
 
 func TestWriteError(t *testing.T) {
-	fperr, handle := ErrorHandler(filepicker.ErrCannotFindWriteBlob)
+	fperr, handler := ErrorHandler(filepicker.ErrCannotFindWriteBlob)
 
 	client := filepicker.NewClient(FakeApiKey)
-	mock := MockServer(t, client, handle)
+	mock := MockServer(t, client, handler)
 	defer mock.Close()
 
 	blob := filepicker.NewBlob("XYZ")
@@ -114,7 +94,6 @@ func TestWriteErrorNoFile(t *testing.T) {
 
 func TestWriteUrl(t *testing.T) {
 	const TestUrl = `https://www.filepicker.com/image.png`
-	var testCounter int
 	tests := []struct {
 		Src *filepicker.Blob
 		Opt *filepicker.WriteOpts
@@ -143,25 +122,9 @@ func TestWriteUrl(t *testing.T) {
 	}
 
 	var reqUrl, reqMethod, reqBody string
-	writeHandle := func(w http.ResponseWriter, req *http.Request) {
-		body, _ := ioutil.ReadAll(req.Body)
-		reqBody = string(body)
-		reqUrl = req.URL.String()
-		reqMethod = req.Method
-		blob := &filepicker.Blob{}
-		data, err := json.Marshal(blob)
-		testCounter++
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		if _, err := w.Write(data); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	}
-
+	handler := testHandle(&reqUrl, &reqMethod, &reqBody)
 	client := filepicker.NewClient(FakeApiKey)
-	mock := MockServer(t, client, writeHandle)
+	mock := MockServer(t, client, handler)
 	defer mock.Close()
 
 	for _, test := range tests {
@@ -185,11 +148,11 @@ func TestWriteUrl(t *testing.T) {
 }
 
 func TestWriteURLError(t *testing.T) {
-	fperr, handle := ErrorHandler(filepicker.ErrWriteUrlUnreachable)
+	fperr, handler := ErrorHandler(filepicker.ErrWriteUrlUnreachable)
 
 	blob := filepicker.NewBlob(FakeHandle)
 	client := filepicker.NewClient(FakeApiKey)
-	mock := MockServer(t, client, handle)
+	mock := MockServer(t, client, handler)
 	defer mock.Close()
 
 	switch blob, err := client.WriteURL(blob, "http://www.address.fp", nil); {
