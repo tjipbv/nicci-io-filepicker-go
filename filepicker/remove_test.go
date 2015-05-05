@@ -45,33 +45,30 @@ func TestRemove(t *testing.T) {
 
 	for _, test := range tests {
 		if err := client.Remove(blob, test.Opt); err != nil {
-			t.Errorf(`want err == nil, got %v`, err)
+			t.Errorf(`want err == nil; got %v`, err)
 		}
 		if test.Url != reqUrl {
-			t.Errorf(`want test.Url == reqUrl, got %q != %q`, test.Url, reqUrl)
+			t.Errorf(`want test.Url == reqUrl; got %q != %q`, test.Url, reqUrl)
 		}
 		if reqMethod != `DELETE` {
-			t.Errorf(`want reqMethod == DELETE, got %s`, reqMethod)
+			t.Errorf(`want reqMethod == DELETE; got %s`, reqMethod)
 		}
 		if reqBody != `` {
-			t.Errorf(`want reqBody == "", got %q`, reqBody)
+			t.Errorf(`want reqBody == ""; got %q`, reqBody)
 		}
 	}
 }
 
 func TestRemoveError(t *testing.T) {
-	const connerr filepicker.FPError = filepicker.ErrRmFileCannotBeFound
-	removeHandle := func(w http.ResponseWriter, req *http.Request) {
-		http.Error(w, connerr.Error(), int(connerr))
-	}
+	fperr, handle := ErrorHandler(filepicker.ErrRmFileCannotBeFound)
 
 	blob := filepicker.NewBlob(FakeHandle)
 	client := filepicker.NewClient(FakeApiKey)
 
-	mock := MockServer(t, client, removeHandle)
+	mock := MockServer(t, client, handle)
 	defer mock.Close()
 
-	if err := client.Remove(blob, nil); err != connerr {
-		t.Errorf("want err == connerr(%v), got %v", connerr, err)
+	if err := client.Remove(blob, nil); err != fperr {
+		t.Errorf("want err == fperr(%v), got %v", fperr, err)
 	}
 }

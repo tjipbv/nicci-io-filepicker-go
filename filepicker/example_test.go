@@ -66,5 +66,5 @@ func ExampleMakeSecurity() {
 	}
 
 	security := filepicker.MakeSecurity("Z3IYZSH2UJA7VN3QYFVSVCF7PI", policy)
-	log.Println("P: %s\nS: %s\n", security.Policy, security.Signature)
+	log.Printf("P: %s\nS: %s\n", security.Policy, security.Signature)
 }

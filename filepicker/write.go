@@ -2,6 +2,7 @@ package filepicker
 
 import "net/url"
 
+// WriteOpts TODO : (ppknap)
 type WriteOpts struct {
 	// Base64Decode indicates whether the data should be first decoded from
 	// base64 before being written to the file.

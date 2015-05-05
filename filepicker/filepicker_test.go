@@ -1,8 +1,6 @@
 package filepicker_test
 
 import (
-	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -35,8 +33,8 @@ func MockServer(t *testing.T, c *filepicker.Client, h http.HandlerFunc) *httptes
 	c.Client.Transport = &MockedTransport{
 		Transport: http.Transport{
 			Proxy: func(req *http.Request) (*url.URL, error) {
-				fmt.Println(*req)
-				fmt.Println(url.Parse(mockedServer.URL))
+				//fmt.Println(*req)
+				//fmt.Println(url.Parse(mockedServer.URL))
 				return url.Parse(mockedServer.URL)
 			},
 		},
@@ -44,17 +42,9 @@ func MockServer(t *testing.T, c *filepicker.Client, h http.HandlerFunc) *httptes
 	return mockedServer
 }
 
-func TestTmp(t *testing.T) {
-	printerHandle := func(w http.ResponseWriter, req *http.Request) {
-		fmt.Println(*req)
-		fmt.Println("================")
-		byteData, _ := ioutil.ReadAll(req.Body)
-		fmt.Println(string(byteData))
+func ErrorHandler(fperr filepicker.FPError) (
+	filepicker.FPError, func(w http.ResponseWriter, req *http.Request)) {
+	return fperr, func(w http.ResponseWriter, req *http.Request) {
+		http.Error(w, fperr.Error(), int(fperr))
 	}
-
-	client := filepicker.NewClient(FakeApiKey)
-	mock := MockServer(t, client, printerHandle)
-	defer mock.Close()
-
-	client.StoreURL("https://url.com/sth", nil)
 }
