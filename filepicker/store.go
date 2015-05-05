@@ -73,7 +73,7 @@ func (c *Client) store(name string, fn func() string) (blob *Blob, err error) {
 		return
 	}
 	defer file.Close()
-	mimewr, err := wr.CreateFormFile("fileUpload", name)
+	mimewr, err := wr.CreateFormFile(`fileUpload`, name)
 	if err != nil {
 		return
 	}
@@ -99,7 +99,7 @@ func (c *Client) StoreURL(dataUrl string, opt *StoreOpts) (blob *Blob, err error
 
 func (c *Client) storeURL(dataUrl string, fn func() string) (blob *Blob, err error) {
 	values := url.Values{}
-	values.Set("url", dataUrl)
+	values.Set(`url`, dataUrl)
 	return storeRes(c.Client.PostForm(fn(), values))
 }
 
@@ -122,15 +122,15 @@ func (c *Client) toStoreURL(opt *StoreOpts) *url.URL {
 	values := url.Values{}
 	if opt != nil {
 		values = opt.toValues()
-		if opt.Location != "" {
+		if opt.Location != `` {
 			storage = opt.Location
 		}
 	}
-	values.Set("key", c.apiKey)
+	values.Set(`key`, c.apiKey)
 	return &url.URL{
 		Scheme:   apiURL.Scheme,
 		Host:     apiURL.Host,
-		Path:     path.Join("api", "store", string(storage)),
+		Path:     path.Join(`api`, `store`, string(storage)),
 		RawQuery: values.Encode(),
 	}
 }

@@ -11,16 +11,16 @@ import (
 	"github.com/filepicker/filepicker-go/filepicker"
 )
 
-const tmpFileContent = "STORETEST"
+const tmpFileContent = `STORETEST`
 
 func tempFile(t *testing.T) (name string) {
-	file, err := ioutil.TempFile("", "FP")
+	file, err := ioutil.TempFile(``, `FP`)
 	if err != nil {
-		t.Fatalf("want err == nil; got %v", err)
+		t.Fatalf(`want err == nil; got %v`, err)
 	}
 	defer file.Close()
 	if _, err := file.WriteString(tmpFileContent); err != nil {
-		t.Fatalf("want err == nil; got %v", err)
+		t.Fatalf(`want err == nil; got %v`, err)
 	}
 	return file.Name()
 }
@@ -60,13 +60,13 @@ func TestStore(t *testing.T) {
 		},
 		{
 			Opt: &filepicker.StoreOpts{
-				Filename: "file.txt",
+				Filename: `file.txt`,
 			},
 			Url: `http://www.filepicker.io/api/store/S3?filename=file.txt&key=0KKK1`,
 		},
 		{
 			Opt: &filepicker.StoreOpts{
-				Path:         "path",
+				Path:         `path`,
 				Base64Decode: true,
 			},
 			Url: `http://www.filepicker.io/api/store/S3?base64decode=true&key=0KKK1&path=path`,
@@ -85,10 +85,10 @@ func TestStore(t *testing.T) {
 	for _, test := range tests {
 		blob, err := client.Store(filename, test.Opt)
 		if err != nil {
-			t.Errorf(`want err == nil, got %v`, err)
+			t.Errorf(`want err == nil; got %v`, err)
 		}
 		if blob == nil {
-			t.Error(`want blob != nil, got nil`)
+			t.Error(`want blob != nil; got nil`)
 		}
 		if test.Url != reqUrl {
 			t.Errorf(`want test.Url == reqUrl; got %q != %q`, test.Url, reqUrl)
@@ -111,19 +111,19 @@ func TestStoreError(t *testing.T) {
 
 	switch blob, err := client.Store(filename, nil); {
 	case blob != nil:
-		t.Errorf("want blob == nil, got %v", blob)
+		t.Errorf(`want blob == nil; got %v`, blob)
 	case err != fperr:
-		t.Errorf("want err == fperr(%v), got %v", fperr, err)
+		t.Errorf(`want err == fperr(%v); got %v`, fperr, err)
 	}
 }
 
 func TestStoreErrorNoFile(t *testing.T) {
 	client := filepicker.NewClient(FakeApiKey)
-	switch blob, err := client.Store("unknown.unknown.file", nil); {
+	switch blob, err := client.Store(`unknown.unknown.file`, nil); {
 	case blob != nil:
-		t.Errorf("want blob == nil, got %v", blob)
+		t.Errorf(`want blob == nil; got %v`, blob)
 	case err == nil:
-		t.Error("want err != nil, got nil")
+		t.Error(`want err != nil; got nil`)
 	}
 }
 
@@ -145,13 +145,13 @@ func TestStoreUrl(t *testing.T) {
 		},
 		{
 			Opt: &filepicker.StoreOpts{
-				Access: "public",
+				Access: `public`,
 			},
 			Url: `http://www.filepicker.io/api/store/S3?access=public&key=0KKK1`,
 		},
 		{
 			Opt: &filepicker.StoreOpts{
-				Path:         "path",
+				Path:         `path`,
 				Base64Decode: true,
 			},
 			Url: `http://www.filepicker.io/api/store/S3?base64decode=true&key=0KKK1&path=path`,
@@ -167,7 +167,7 @@ func TestStoreUrl(t *testing.T) {
 	for _, test := range tests {
 		blob, err := client.StoreURL(TestUrl, test.Opt)
 		if err != nil {
-			t.Errorf(`want err == nil, got %v`, err)
+			t.Errorf(`want err == nil; got %v`, err)
 		}
 		if test.Url != reqUrl {
 			t.Errorf(`want test.Url == reqUrl; got %q != %q`, test.Url, reqUrl)
@@ -175,11 +175,11 @@ func TestStoreUrl(t *testing.T) {
 		if reqMethod != `POST` {
 			t.Errorf(`want reqMethod == POST; got %s`, reqMethod)
 		}
-		if TestUrlEsc := "url=" + url.QueryEscape(TestUrl); reqBody != TestUrlEsc {
+		if TestUrlEsc := `url=` + url.QueryEscape(TestUrl); reqBody != TestUrlEsc {
 			t.Errorf(`want reqBody == TestUrlEsc; got %q != %q`, reqBody, TestUrlEsc)
 		}
 		if blob == nil {
-			t.Error(`want blob != nil`)
+			t.Error(`want blob != nil; got nil`)
 		}
 	}
 }
@@ -191,10 +191,10 @@ func TestStoreURLError(t *testing.T) {
 	mock := MockServer(t, client, handler)
 	defer mock.Close()
 
-	switch blob, err := client.StoreURL("http://www.address.fp", nil); {
+	switch blob, err := client.StoreURL(`http://www.address.fp`, nil); {
 	case blob != nil:
-		t.Errorf("want blob == nil, got %v", blob)
+		t.Errorf(`want blob == nil; got %v`, blob)
 	case err != fperr:
-		t.Errorf("want err == fperr(%v), got %v", fperr, err)
+		t.Errorf(`want err == fperr(%v); got %v`, fperr, err)
 	}
 }

@@ -48,10 +48,10 @@ func TestWrite(t *testing.T) {
 	for _, test := range tests {
 		blob, err := client.Write(test.Src, filename, test.Opt)
 		if err != nil {
-			t.Errorf(`want err == nil, got %v`, err)
+			t.Errorf(`want err == nil; got %v`, err)
 		}
 		if blob == nil {
-			t.Error(`want blob != nil, got nil`)
+			t.Error(`want blob != nil; got nil`)
 		}
 		if test.Url != reqUrl {
 			t.Errorf(`want test.Url == reqUrl; got %q != %q`, test.Url, reqUrl)
@@ -69,26 +69,26 @@ func TestWriteError(t *testing.T) {
 	mock := MockServer(t, client, handler)
 	defer mock.Close()
 
-	blob := filepicker.NewBlob("XYZ")
+	blob := filepicker.NewBlob(`XYZ`)
 	filename := tempFile(t)
 	defer os.Remove(filename)
 
 	switch blob, err := client.Write(blob, filename, nil); {
 	case blob != nil:
-		t.Errorf("want blob == nil, got %v", blob)
+		t.Errorf(`want blob == nil; got %v`, blob)
 	case err != fperr:
-		t.Errorf("want err == fperr(%v), got %v", fperr, err)
+		t.Errorf(`want err == fperr(%v); got %v`, fperr, err)
 	}
 }
 
 func TestWriteErrorNoFile(t *testing.T) {
-	blob := filepicker.NewBlob("XYZ")
+	blob := filepicker.NewBlob(`XYZ`)
 	client := filepicker.NewClient(FakeApiKey)
-	switch blob, err := client.Write(blob, "unknown.unknown.file", nil); {
+	switch blob, err := client.Write(blob, `unknown.unknown.file`, nil); {
 	case blob != nil:
-		t.Error("want blob == nil, got %v", blob)
+		t.Error(`want blob == nil; got %v`, blob)
 	case err == nil:
-		t.Error("want err != nil, got nil")
+		t.Error(`want err != nil; got nil`)
 	}
 }
 
@@ -130,7 +130,7 @@ func TestWriteUrl(t *testing.T) {
 	for _, test := range tests {
 		blob, err := client.WriteURL(test.Src, TestUrl, test.Opt)
 		if err != nil {
-			t.Errorf(`want err == nil, got %v`, err)
+			t.Errorf(`want err == nil; got %v`, err)
 		}
 		if test.Url != reqUrl {
 			t.Errorf(`want test.Url == reqUrl; got %q != %q`, test.Url, reqUrl)
@@ -138,11 +138,11 @@ func TestWriteUrl(t *testing.T) {
 		if reqMethod != `POST` {
 			t.Errorf(`want reqMethod == POST; got %s`, reqMethod)
 		}
-		if TestUrlEsc := "url=" + url.QueryEscape(TestUrl); reqBody != TestUrlEsc {
+		if TestUrlEsc := `url=` + url.QueryEscape(TestUrl); reqBody != TestUrlEsc {
 			t.Errorf(`want reqBody == TestUrlEsc; got %q != %q`, reqBody, TestUrlEsc)
 		}
 		if blob == nil {
-			t.Error(`want blob != nil`)
+			t.Error(`want blob != nil; got nil`)
 		}
 	}
 }
@@ -155,10 +155,10 @@ func TestWriteURLError(t *testing.T) {
 	mock := MockServer(t, client, handler)
 	defer mock.Close()
 
-	switch blob, err := client.WriteURL(blob, "http://www.address.fp", nil); {
+	switch blob, err := client.WriteURL(blob, `http://www.address.fp`, nil); {
 	case blob != nil:
-		t.Errorf("want blob == nil, got %v", blob)
+		t.Errorf(`want blob == nil; got %v`, blob)
 	case err != fperr:
-		t.Errorf("want err == fperr(%v), got %v", fperr, err)
+		t.Errorf(`want err == fperr(%v); got %v`, fperr, err)
 	}
 }
