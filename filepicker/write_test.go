@@ -6,167 +6,45 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"reflect"
 	"testing"
 
 	"github.com/filepicker/filepicker-go/filepicker"
 )
 
-const tmpFileContent = "STORETEST"
-
-func tempFile(t *testing.T) (name string) {
-	file, err := ioutil.TempFile("", "FP")
-	if err != nil {
-		t.Fatalf("want err == nil; got %v", err)
-	}
-	defer file.Close()
-	if _, err := file.WriteString(tmpFileContent); err != nil {
-		t.Fatalf("want err == nil; got %v", err)
-	}
-	return file.Name()
-}
-
-func TestStore(t *testing.T) {
+func TestWrite(t *testing.T) {
 	var testCounter int
 	tests := []struct {
-		Opt  *filepicker.StoreOpts
-		Url  string
-		Blob *filepicker.Blob
-	}{
-		{
-			Opt:  nil,
-			Url:  `http://www.filepicker.io/api/store/S3?key=0KKK1`,
-			Blob: &filepicker.Blob{},
-		},
-		{
-			Opt: &filepicker.StoreOpts{
-				Location: filepicker.Azure,
-			},
-			Url:  `http://www.filepicker.io/api/store/azure?key=0KKK1&location=azure`,
-			Blob: &filepicker.Blob{},
-		},
-		{
-			Opt: &filepicker.StoreOpts{
-				Filename: "file.txt",
-			},
-			Url: `http://www.filepicker.io/api/store/S3?filename=file.txt&key=0KKK1`,
-			Blob: &filepicker.Blob{
-				Filename: "file.txt",
-			},
-		},
-		{
-			Opt: &filepicker.StoreOpts{
-				Path:         "path",
-				Base64Decode: true,
-			},
-			Url:  `http://www.filepicker.io/api/store/S3?base64decode=true&key=0KKK1&path=path`,
-			Blob: &filepicker.Blob{},
-		},
-	}
-
-	filename := tempFile(t)
-	defer os.Remove(filename)
-
-	var reqUrl, reqMethod, reqBody string
-	storeHandle := func(w http.ResponseWriter, req *http.Request) {
-		body, _ := ioutil.ReadAll(req.Body)
-		reqBody = string(body)
-		reqUrl = req.URL.String()
-		reqMethod = req.Method
-		data, err := json.Marshal(tests[testCounter].Blob)
-		testCounter++
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		if _, err := w.Write(data); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	}
-
-	client := filepicker.NewClient(FakeApiKey)
-	mock := MockServer(t, client, storeHandle)
-	defer mock.Close()
-
-	for _, test := range tests {
-		blob, err := client.Store(filename, test.Opt)
-		if err != nil {
-			t.Errorf(`want err == nil, got %v`, err)
-		}
-		if test.Url != reqUrl {
-			t.Errorf(`want test.Url == reqUrl; got %q != %q`, test.Url, reqUrl)
-		}
-		if reqMethod != `POST` {
-			t.Errorf(`want reqMethod == POST; got %s`, reqMethod)
-		}
-		if !reflect.DeepEqual(*blob, *test.Blob) {
-			t.Errorf(`want *test.blob(%v) == *blob(%v)`, *test.Blob, *blob)
-		}
-	}
-}
-
-func TestStoreError(t *testing.T) {
-	fperr, handle := ErrorHandler(filepicker.ErrFileStoreUnreachable)
-
-	client := filepicker.NewClient(FakeApiKey)
-	mock := MockServer(t, client, handle)
-	defer mock.Close()
-
-	filename := tempFile(t)
-	defer os.Remove(filename)
-
-	switch blob, err := client.Store(filename, nil); {
-	case blob != nil:
-		t.Errorf("want blob == nil, got %v", blob)
-	case err != fperr:
-		t.Errorf("want err == fperr(%v), got %v", fperr, err)
-	}
-}
-
-func TestStoreErrorNoFile(t *testing.T) {
-	client := filepicker.NewClient(FakeApiKey)
-	switch blob, err := client.Store("unknown.unknown.file", nil); {
-	case blob != nil:
-		t.Errorf("want blob == nil, got %v", blob)
-	case err == nil:
-		t.Error("want err != nil, got nil")
-	}
-}
-
-func TestStoreUrl(t *testing.T) {
-	const TestUrl = `https://www.filepicker.com/image.png`
-	var testCounter int
-	tests := []struct {
-		Opt *filepicker.StoreOpts
+		Src *filepicker.Blob
+		Opt *filepicker.WriteOpts
 		Url string
 	}{
 		{
+			Src: filepicker.NewBlob(FakeHandle),
 			Opt: nil,
-			Url: `http://www.filepicker.io/api/store/S3?key=0KKK1`,
+			Url: `http://www.filepicker.io/api/file/2HHH3`,
 		},
 		{
-			Opt: &filepicker.StoreOpts{
-				Location: filepicker.Azure,
-			},
-			Url: `http://www.filepicker.io/api/store/azure?key=0KKK1&location=azure`,
-		},
-		{
-			Opt: &filepicker.StoreOpts{
-				Access: "public",
-			},
-			Url: `http://www.filepicker.io/api/store/S3?access=public&key=0KKK1`,
-		},
-		{
-			Opt: &filepicker.StoreOpts{
-				Path:         "path",
+			Src: filepicker.NewBlob(FakeHandle),
+			Opt: &filepicker.WriteOpts{
 				Base64Decode: true,
 			},
-			Url: `http://www.filepicker.io/api/store/S3?base64decode=true&key=0KKK1&path=path`,
+			Url: `http://www.filepicker.io/api/file/2HHH3?base64decode=true`,
+		},
+		{
+			Src: filepicker.NewBlob(FakeHandle),
+			Opt: &filepicker.WriteOpts{
+				Base64Decode: true,
+				Security:     dummySecurity,
+			},
+			Url: `http://www.filepicker.io/api/file/2HHH3?base64decode=true&policy=P&signature=S`,
 		},
 	}
 
+	filename := tempFile(t)
+	defer os.Remove(filename)
+
 	var reqUrl, reqMethod, reqBody string
-	storeHandle := func(w http.ResponseWriter, req *http.Request) {
+	writeHandle := func(w http.ResponseWriter, req *http.Request) {
 		body, _ := ioutil.ReadAll(req.Body)
 		reqBody = string(body)
 		reqUrl = req.URL.String()
@@ -184,11 +62,110 @@ func TestStoreUrl(t *testing.T) {
 	}
 
 	client := filepicker.NewClient(FakeApiKey)
-	mock := MockServer(t, client, storeHandle)
+	mock := MockServer(t, client, writeHandle)
 	defer mock.Close()
 
 	for _, test := range tests {
-		blob, err := client.StoreURL(TestUrl, test.Opt)
+		blob, err := client.Write(test.Src, filename, test.Opt)
+		if err != nil {
+			t.Errorf(`want err == nil, got %v`, err)
+		}
+		if blob == nil {
+			t.Error(`want blob != nil, got nil`)
+		}
+		if test.Url != reqUrl {
+			t.Errorf(`want test.Url == reqUrl; got %q != %q`, test.Url, reqUrl)
+		}
+		if reqMethod != `POST` {
+			t.Errorf(`want reqMethod == POST; got %s`, reqMethod)
+		}
+	}
+}
+
+func TestWriteError(t *testing.T) {
+	fperr, handle := ErrorHandler(filepicker.ErrCannotFindWriteBlob)
+
+	client := filepicker.NewClient(FakeApiKey)
+	mock := MockServer(t, client, handle)
+	defer mock.Close()
+
+	blob := filepicker.NewBlob("XYZ")
+	filename := tempFile(t)
+	defer os.Remove(filename)
+
+	switch blob, err := client.Write(blob, filename, nil); {
+	case blob != nil:
+		t.Errorf("want blob == nil, got %v", blob)
+	case err != fperr:
+		t.Errorf("want err == fperr(%v), got %v", fperr, err)
+	}
+}
+
+func TestWriteErrorNoFile(t *testing.T) {
+	blob := filepicker.NewBlob("XYZ")
+	client := filepicker.NewClient(FakeApiKey)
+	switch blob, err := client.Write(blob, "unknown.unknown.file", nil); {
+	case blob != nil:
+		t.Error("want blob == nil, got %v", blob)
+	case err == nil:
+		t.Error("want err != nil, got nil")
+	}
+}
+
+func TestWriteUrl(t *testing.T) {
+	const TestUrl = `https://www.filepicker.com/image.png`
+	var testCounter int
+	tests := []struct {
+		Src *filepicker.Blob
+		Opt *filepicker.WriteOpts
+		Url string
+	}{
+		{
+			Src: filepicker.NewBlob(FakeHandle),
+			Opt: nil,
+			Url: `http://www.filepicker.io/api/file/2HHH3`,
+		},
+		{
+			Src: filepicker.NewBlob(FakeHandle),
+			Opt: &filepicker.WriteOpts{
+				Base64Decode: true,
+			},
+			Url: `http://www.filepicker.io/api/file/2HHH3?base64decode=true`,
+		},
+		{
+			Src: filepicker.NewBlob(FakeHandle),
+			Opt: &filepicker.WriteOpts{
+				Base64Decode: true,
+				Security:     dummySecurity,
+			},
+			Url: `http://www.filepicker.io/api/file/2HHH3?base64decode=true&policy=P&signature=S`,
+		},
+	}
+
+	var reqUrl, reqMethod, reqBody string
+	writeHandle := func(w http.ResponseWriter, req *http.Request) {
+		body, _ := ioutil.ReadAll(req.Body)
+		reqBody = string(body)
+		reqUrl = req.URL.String()
+		reqMethod = req.Method
+		blob := &filepicker.Blob{}
+		data, err := json.Marshal(blob)
+		testCounter++
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if _, err := w.Write(data); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	}
+
+	client := filepicker.NewClient(FakeApiKey)
+	mock := MockServer(t, client, writeHandle)
+	defer mock.Close()
+
+	for _, test := range tests {
+		blob, err := client.WriteURL(test.Src, TestUrl, test.Opt)
 		if err != nil {
 			t.Errorf(`want err == nil, got %v`, err)
 		}
@@ -207,14 +184,15 @@ func TestStoreUrl(t *testing.T) {
 	}
 }
 
-func TestStoreURLError(t *testing.T) {
-	fperr, handle := ErrorHandler(filepicker.ErrRemoteUrlUnreachable)
+func TestWriteURLError(t *testing.T) {
+	fperr, handle := ErrorHandler(filepicker.ErrWriteUrlUnreachable)
 
+	blob := filepicker.NewBlob(FakeHandle)
 	client := filepicker.NewClient(FakeApiKey)
 	mock := MockServer(t, client, handle)
 	defer mock.Close()
 
-	switch blob, err := client.StoreURL("http://www.address.fp", nil); {
+	switch blob, err := client.WriteURL(blob, "http://www.address.fp", nil); {
 	case blob != nil:
 		t.Errorf("want blob == nil, got %v", blob)
 	case err != fperr:
