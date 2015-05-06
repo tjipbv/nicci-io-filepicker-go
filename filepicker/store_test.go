@@ -11,7 +11,7 @@ import (
 	"github.com/filepicker/filepicker-go/filepicker"
 )
 
-const tmpFileContent = "STORETEST"
+const storeFileContent = "STORETEST"
 
 func tempFile(t *testing.T) (name string) {
 	file, err := ioutil.TempFile("", "FP")
@@ -19,7 +19,7 @@ func tempFile(t *testing.T) (name string) {
 		t.Fatalf("want err == nil; got %v", err)
 	}
 	defer file.Close()
-	if _, err := file.WriteString(tmpFileContent); err != nil {
+	if _, err := file.WriteString(storeFileContent); err != nil {
 		t.Fatalf("want err == nil; got %v", err)
 	}
 	return file.Name()

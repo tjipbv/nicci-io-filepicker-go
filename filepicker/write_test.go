@@ -10,24 +10,20 @@ import (
 
 func TestWrite(t *testing.T) {
 	tests := []struct {
-		Src *filepicker.Blob
 		Opt *filepicker.WriteOpts
 		Url string
 	}{
 		{
-			Src: filepicker.NewBlob(FakeHandle),
 			Opt: nil,
 			Url: "http://www.filepicker.io/api/file/2HHH3",
 		},
 		{
-			Src: filepicker.NewBlob(FakeHandle),
 			Opt: &filepicker.WriteOpts{
 				Base64Decode: true,
 			},
 			Url: "http://www.filepicker.io/api/file/2HHH3?base64decode=true",
 		},
 		{
-			Src: filepicker.NewBlob(FakeHandle),
 			Opt: &filepicker.WriteOpts{
 				Base64Decode: true,
 				Security:     dummySecurity,
@@ -41,12 +37,14 @@ func TestWrite(t *testing.T) {
 
 	var reqUrl, reqMethod, reqBody string
 	handler := testHandle(&reqUrl, &reqMethod, &reqBody)
+
+	blob := filepicker.NewBlob(FakeHandle)
 	client := filepicker.NewClient(FakeApiKey)
 	mock := MockServer(t, client, handler)
 	defer mock.Close()
 
 	for _, test := range tests {
-		blob, err := client.Write(test.Src, filename, test.Opt)
+		blob, err := client.Write(blob, filename, test.Opt)
 		if err != nil {
 			t.Errorf("want err == nil; got %v", err)
 		}
@@ -95,24 +93,20 @@ func TestWriteErrorNoFile(t *testing.T) {
 func TestWriteUrl(t *testing.T) {
 	const TestUrl = "https://www.filepicker.com/image.png"
 	tests := []struct {
-		Src *filepicker.Blob
 		Opt *filepicker.WriteOpts
 		Url string
 	}{
 		{
-			Src: filepicker.NewBlob(FakeHandle),
 			Opt: nil,
 			Url: "http://www.filepicker.io/api/file/2HHH3",
 		},
 		{
-			Src: filepicker.NewBlob(FakeHandle),
 			Opt: &filepicker.WriteOpts{
 				Base64Decode: true,
 			},
 			Url: "http://www.filepicker.io/api/file/2HHH3?base64decode=true",
 		},
 		{
-			Src: filepicker.NewBlob(FakeHandle),
 			Opt: &filepicker.WriteOpts{
 				Base64Decode: true,
 				Security:     dummySecurity,
@@ -123,12 +117,14 @@ func TestWriteUrl(t *testing.T) {
 
 	var reqUrl, reqMethod, reqBody string
 	handler := testHandle(&reqUrl, &reqMethod, &reqBody)
+
+	blob := filepicker.NewBlob(FakeHandle)
 	client := filepicker.NewClient(FakeApiKey)
 	mock := MockServer(t, client, handler)
 	defer mock.Close()
 
 	for _, test := range tests {
-		blob, err := client.WriteURL(test.Src, TestUrl, test.Opt)
+		blob, err := client.WriteURL(blob, TestUrl, test.Opt)
 		if err != nil {
 			t.Errorf("want err == nil; got %v", err)
 		}
