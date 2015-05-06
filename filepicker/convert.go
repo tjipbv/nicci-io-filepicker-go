@@ -27,6 +27,7 @@ const (
 )
 
 // ConvertStoreOpt TODO : (ppknap)
+// NOT nil
 type ConvertOpts struct {
 	// Width of the inputted image, in pixels. This property is ignored when the
 	// file is not an image.
@@ -95,7 +96,7 @@ func (c *Client) ConvertAndStore(src *Blob, opt *ConvertOpts) (*Blob, error) {
 	}
 	blobUrl.Path = path.Join(blobUrl.Path, "convert")
 	if opt == nil {
-		panic("filepicker: convert options pointer is set to nil")
+		panic("filepicker: convert options pointer cannot be set to nil")
 	}
 	values := opt.toValues()
 	values.Set("key", c.apiKey)

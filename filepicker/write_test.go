@@ -84,7 +84,7 @@ func TestWriteErrorNoFile(t *testing.T) {
 	client := filepicker.NewClient(FakeApiKey)
 	switch blob, err := client.Write(blob, "unknown.unknown.file", nil); {
 	case blob != nil:
-		t.Error("want blob == nil; got %v", blob)
+		t.Errorf("want blob == nil; got %v", blob)
 	case err == nil:
 		t.Error("want err != nil; got nil")
 	}
@@ -128,6 +128,9 @@ func TestWriteUrl(t *testing.T) {
 		if err != nil {
 			t.Errorf("want err == nil; got %v", err)
 		}
+		if blob == nil {
+			t.Error("want blob != nil; got nil")
+		}
 		if test.Url != reqUrl {
 			t.Errorf("want test.Url == reqUrl; got %q != %q", test.Url, reqUrl)
 		}
@@ -136,9 +139,6 @@ func TestWriteUrl(t *testing.T) {
 		}
 		if TestUrlEsc := "url=" + url.QueryEscape(TestUrl); reqBody != TestUrlEsc {
 			t.Errorf("want reqBody == TestUrlEsc; got %q != %q", reqBody, TestUrlEsc)
-		}
-		if blob == nil {
-			t.Error("want blob != nil; got nil")
 		}
 	}
 }

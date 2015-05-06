@@ -59,7 +59,7 @@ func TestDownloadTo(t *testing.T) {
 			t.Errorf("want err == nil; got %v", err)
 		}
 		if l := int64(len(downloadFileContent)); l != byteRead {
-			t.Error("want l(%d) == byteRead(%d)", l, byteRead)
+			t.Errorf("want l(%d) == byteRead(%d)", l, byteRead)
 		}
 		if test.Url != reqUrl {
 			t.Errorf("want test.Url == reqUrl; got %q != %q", test.Url, reqUrl)
