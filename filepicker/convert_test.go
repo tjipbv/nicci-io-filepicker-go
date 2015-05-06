@@ -76,7 +76,7 @@ func TestConvertAndStore(t *testing.T) {
 }
 
 func TestConvertAndStoreError(t *testing.T) {
-	fperr, handler := ErrorHandler(filepicker.ErrConvertUnknownFailure)
+	fperr, handler := ErrorHandler(dummyErrStr)
 
 	blob := filepicker.NewBlob(FakeHandle)
 	opts := &filepicker.ConvertOpts{Width: 300}
@@ -87,7 +87,7 @@ func TestConvertAndStoreError(t *testing.T) {
 	switch blob, err := client.ConvertAndStore(blob, opts); {
 	case blob != nil:
 		t.Errorf("want blob == nil; got %v", blob)
-	case err != fperr:
-		t.Errorf("want err == fperr(%v); got %v", fperr, err)
+	case err.Error() != fperr.Error():
+		t.Errorf("want error message == %q; got %q", fperr, err)
 	}
 }

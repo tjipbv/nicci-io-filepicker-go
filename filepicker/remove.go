@@ -41,8 +41,5 @@ func (c *Client) Remove(src *Blob, opt *RemoveOpts) (err error) {
 		return
 	}
 	defer resp.Body.Close()
-	if invalidResCode(resp.StatusCode) {
-		return FPError(resp.StatusCode)
-	}
-	return
+	return readError(resp)
 }

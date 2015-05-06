@@ -110,8 +110,8 @@ func storeRes(resp *http.Response, respErr error) (blob *Blob, err error) {
 		return nil, respErr
 	}
 	defer resp.Body.Close()
-	if invalidResCode(resp.StatusCode) {
-		return nil, FPError(resp.StatusCode)
+	if err = readError(resp); err != nil {
+		return
 	}
 	blob = &Blob{}
 	return blob, json.NewDecoder(resp.Body).Decode(blob)

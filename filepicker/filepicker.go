@@ -3,9 +3,11 @@ package filepicker
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
 )
 
 func init() {
@@ -80,6 +82,18 @@ func (b *Blob) Handle() string {
 	return path.Base(blobUrl.Path)
 }
 
+// fperror represents an error that can be returned from filepicker.io service.
+type fperror struct {
+	Code    int
+	Message string
+}
+
+// Error satisfies builtin.error interface. It prints an error string with
+// the reason of failure.
+func (e fperror) Error() string {
+	return fmt.Sprintf("filepicker: %d - %s", e.Code, e.Message)
+}
+
 // Client TODO : (ppknap)
 type Client struct {
 	apiKey  string
@@ -106,11 +120,6 @@ func newClient(apiKey string, storage Storage) *Client {
 	}
 }
 
-// invalidResCode returns true when response code is not valid.
-func invalidResCode(code int) bool {
-	return code != http.StatusOK
-}
-
 // toValues takes all non-zero values from provided interface and puts them to
 // a url.Values object.
 func toValues(val interface{}) url.Values {
@@ -125,4 +134,18 @@ func toValues(val interface{}) url.Values {
 		values.Set(k, fmt.Sprint(v))
 	}
 	return values
+}
+
+func readError(resp *http.Response) error {
+	if resp.StatusCode == http.StatusOK {
+		return nil
+	}
+	bytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	return fperror{
+		Code:    resp.StatusCode,
+		Message: strings.TrimSpace(string(bytes)),
+	}
 }

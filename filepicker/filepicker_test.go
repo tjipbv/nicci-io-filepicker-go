@@ -1,6 +1,7 @@
 package filepicker_test
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -23,6 +24,8 @@ type MockedTransport struct {
 	Transport http.Transport
 }
 
+var dummyErrStr = "dummy error"
+
 func (mt *MockedTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.URL.Scheme = "http" // Disable SSL
 	return mt.Transport.RoundTrip(req)
@@ -40,9 +43,14 @@ func MockServer(t *testing.T, c *filepicker.Client, h http.HandlerFunc) *httptes
 	return mockedServer
 }
 
-func ErrorHandler(fperr filepicker.FPError) (
-	filepicker.FPError, func(w http.ResponseWriter, req *http.Request)) {
-	return fperr, func(w http.ResponseWriter, req *http.Request) {
-		http.Error(w, fperr.Error(), int(fperr))
+func ErrorHandler(errstr string) (error, func(w http.ResponseWriter, req *http.Request)) {
+	return errors.New("filepicker: 404 - " + dummyErrStr), func(w http.ResponseWriter, req *http.Request) {
+		http.Error(w, errstr, 404)
+	}
+}
+
+func TestBlobHandle(t *testing.T) {
+	if blob := filepicker.NewBlob(FakeHandle); blob.Handle() != FakeHandle {
+		t.Errorf("want blob.Handle() == %q; got %q", FakeHandle, blob.Handle())
 	}
 }

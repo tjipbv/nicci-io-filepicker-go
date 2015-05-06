@@ -59,7 +59,7 @@ func TestRemove(t *testing.T) {
 }
 
 func TestRemoveError(t *testing.T) {
-	fperr, handler := ErrorHandler(filepicker.ErrRmFileCannotBeFound)
+	fperr, handler := ErrorHandler(dummyErrStr)
 
 	blob := filepicker.NewBlob(FakeHandle)
 	client := filepicker.NewClient(FakeApiKey)
@@ -67,7 +67,7 @@ func TestRemoveError(t *testing.T) {
 	mock := MockServer(t, client, handler)
 	defer mock.Close()
 
-	if err := client.Remove(blob, nil); err != fperr {
-		t.Errorf("want err == fperr(%v), got %v", fperr, err)
+	if err := client.Remove(blob, nil); err.Error() != fperr.Error() {
+		t.Errorf("want error message == %q; got %q", fperr, err)
 	}
 }

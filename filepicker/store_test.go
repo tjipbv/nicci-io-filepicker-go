@@ -100,7 +100,7 @@ func TestStore(t *testing.T) {
 }
 
 func TestStoreError(t *testing.T) {
-	fperr, handler := ErrorHandler(filepicker.ErrFileStoreUnreachable)
+	fperr, handler := ErrorHandler(dummyErrStr)
 
 	client := filepicker.NewClient(FakeApiKey)
 	mock := MockServer(t, client, handler)
@@ -112,8 +112,8 @@ func TestStoreError(t *testing.T) {
 	switch blob, err := client.Store(filename, nil); {
 	case blob != nil:
 		t.Errorf("want blob == nil; got %v", blob)
-	case err != fperr:
-		t.Errorf("want err == fperr(%v); got %v", fperr, err)
+	case err.Error() != fperr.Error():
+		t.Errorf("want error message == %q; got %q", fperr, err)
 	}
 }
 
@@ -185,7 +185,7 @@ func TestStoreUrl(t *testing.T) {
 }
 
 func TestStoreURLError(t *testing.T) {
-	fperr, handler := ErrorHandler(filepicker.ErrRemoteUrlUnreachable)
+	fperr, handler := ErrorHandler(dummyErrStr)
 
 	client := filepicker.NewClient(FakeApiKey)
 	mock := MockServer(t, client, handler)
@@ -194,7 +194,7 @@ func TestStoreURLError(t *testing.T) {
 	switch blob, err := client.StoreURL("http://www.address.fp", nil); {
 	case blob != nil:
 		t.Errorf("want blob == nil; got %v", blob)
-	case err != fperr:
-		t.Errorf("want err == fperr(%v); got %v", fperr, err)
+	case err.Error() != fperr.Error():
+		t.Errorf("want error message == %q; got %q", fperr, err)
 	}
 }

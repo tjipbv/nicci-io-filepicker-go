@@ -75,7 +75,7 @@ func TestDownloadTo(t *testing.T) {
 }
 
 func TestDownloadToError(t *testing.T) {
-	fperr, handler := ErrorHandler(filepicker.ErrFileNotFound)
+	fperr, handler := ErrorHandler(dummyErrStr)
 
 	blob := filepicker.NewBlob(FakeHandle)
 	client := filepicker.NewClient(FakeApiKey)
@@ -86,8 +86,8 @@ func TestDownloadToError(t *testing.T) {
 	switch byteRead, err := client.DownloadTo(blob, nil, &buff); {
 	case byteRead != 0:
 		t.Errorf("want byteRead == 0; got %d", byteRead)
-	case err != fperr:
-		t.Errorf("want err == fperr(%v); got %v", fperr, err)
+	case err.Error() != fperr.Error():
+		t.Errorf("want error message == %q; got %q", fperr, err)
 	}
 }
 
@@ -184,14 +184,14 @@ func TestDownloadToFile(t *testing.T) {
 }
 
 func TestDownloadToFileError(t *testing.T) {
-	fperr, handler := ErrorHandler(filepicker.ErrFileNotFound)
+	fperr, handler := ErrorHandler(dummyErrStr)
 
 	blob := filepicker.NewBlob(FakeHandle)
-	client := filepicker.NewClient(FakeApiKey)
+	client := filepicker.NewClientStorage(FakeApiKey, filepicker.Azure)
 	mock := MockServer(t, client, handler)
 	defer mock.Close()
 
-	if err := client.DownloadToFile(blob, nil, "."); err == nil {
-		t.Errorf("want err == fperr(%v); got %v", fperr, err)
+	if err := client.DownloadToFile(blob, nil, "."); err.Error() != fperr.Error() {
+		t.Errorf("want error message == %q; got %q", fperr, err)
 	}
 }

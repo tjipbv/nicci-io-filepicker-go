@@ -43,7 +43,7 @@ func TestWrite(t *testing.T) {
 	mock := MockServer(t, client, handler)
 	defer mock.Close()
 
-	for _, test := range tests {
+	for i, test := range tests {
 		blob, err := client.Write(blob, filename, test.Opt)
 		if err != nil {
 			t.Errorf("want err == nil; got %v (i:%d)", err, i)
@@ -61,7 +61,7 @@ func TestWrite(t *testing.T) {
 }
 
 func TestWriteError(t *testing.T) {
-	fperr, handler := ErrorHandler(filepicker.ErrCannotFindWriteBlob)
+	fperr, handler := ErrorHandler(dummyErrStr)
 
 	client := filepicker.NewClient(FakeApiKey)
 	mock := MockServer(t, client, handler)
@@ -74,8 +74,8 @@ func TestWriteError(t *testing.T) {
 	switch blob, err := client.Write(blob, filename, nil); {
 	case blob != nil:
 		t.Errorf("want blob == nil; got %v", blob)
-	case err != fperr:
-		t.Errorf("want err == fperr(%v); got %v", fperr, err)
+	case err.Error() != fperr.Error():
+		t.Errorf("want error message == %q; got %q", fperr, err)
 	}
 }
 
@@ -123,7 +123,7 @@ func TestWriteUrl(t *testing.T) {
 	mock := MockServer(t, client, handler)
 	defer mock.Close()
 
-	for _, test := range tests {
+	for i, test := range tests {
 		blob, err := client.WriteURL(blob, TestUrl, test.Opt)
 		if err != nil {
 			t.Errorf("want err == nil; got %v (i:%d)", err, i)
@@ -144,7 +144,7 @@ func TestWriteUrl(t *testing.T) {
 }
 
 func TestWriteURLError(t *testing.T) {
-	fperr, handler := ErrorHandler(filepicker.ErrWriteUrlUnreachable)
+	fperr, handler := ErrorHandler(dummyErrStr)
 
 	blob := filepicker.NewBlob(FakeHandle)
 	client := filepicker.NewClient(FakeApiKey)
@@ -154,7 +154,7 @@ func TestWriteURLError(t *testing.T) {
 	switch blob, err := client.WriteURL(blob, "http://www.address.fp", nil); {
 	case blob != nil:
 		t.Errorf("want blob == nil; got %v", blob)
-	case err != fperr:
-		t.Errorf("want err == fperr(%v); got %v", fperr, err)
+	case err.Error() != fperr.Error():
+		t.Errorf("want error message == %q; got %q", fperr, err)
 	}
 }

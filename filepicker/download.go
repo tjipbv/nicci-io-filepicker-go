@@ -72,9 +72,8 @@ func (c *Client) download(src *Blob, opt *DownloadOpts) (resp *http.Response, er
 	if resp, err = c.Client.Get(blobUrl.String()); err != nil {
 		return
 	}
-	if invalidResCode(resp.StatusCode) {
+	if err = readError(resp); err != nil {
 		resp.Body.Close()
-		return nil, FPError(resp.StatusCode)
 	}
 	return
 }

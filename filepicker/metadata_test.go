@@ -246,7 +246,7 @@ func TestStatMetadata(t *testing.T) {
 }
 
 func TestStatError(t *testing.T) {
-	fperr, handler := ErrorHandler(filepicker.ErrStatFetchingMetadata)
+	fperr, handler := ErrorHandler(dummyErrStr)
 
 	blob := filepicker.NewBlob(FakeHandle)
 	client := filepicker.NewClient(FakeApiKey)
@@ -256,7 +256,7 @@ func TestStatError(t *testing.T) {
 	switch meta, err := client.Stat(blob, nil); {
 	case meta != nil:
 		t.Errorf("want meta == nil; got %v", meta)
-	case err != fperr:
-		t.Errorf("want err == fperr(%v); got %v", fperr, err)
+	case err.Error() != fperr.Error():
+		t.Errorf("want error message == %q; got %q", fperr, err)
 	}
 }

@@ -163,8 +163,8 @@ func (c *Client) Stat(src *Blob, opt *StatOpts) (md Metadata, err error) {
 		return
 	}
 	defer resp.Body.Close()
-	if invalidResCode(resp.StatusCode) {
-		return nil, FPError(resp.StatusCode)
+	if err = readError(resp); err != nil {
+		return
 	}
 	md = make(Metadata)
 	err = json.NewDecoder(resp.Body).Decode(&md)
