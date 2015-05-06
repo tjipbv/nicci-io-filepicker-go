@@ -40,18 +40,18 @@ func TestSecurity(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for i, test := range tests {
 		policy, err := filepicker.MakePolicy(test.Opt)
 		if err != nil {
-			t.Errorf("want err == nil; got %v", err)
+			t.Errorf("want err == nil; got %v (i:%d)", err, i)
 		}
 		if policy != test.Sec.Policy {
-			t.Errorf("want policy == test.Sec.Policy; got %v != %v", policy, test.Sec.Policy)
+			t.Errorf("want policy == %v; got %v (i:%d)", test.Sec.Policy, policy, i)
 		}
 		security := filepicker.MakeSecurity(test.Key, policy)
 		if security.Signature != test.Sec.Signature {
-			t.Errorf("want security.Signeture == test.Sec.Signature; got %v != %v",
-				security.Signature, test.Sec.Signature)
+			t.Errorf("want security.Signature == %v; got %v (i:%d)",
+				test.Sec.Signature, security.Signature, i)
 		}
 	}
 }

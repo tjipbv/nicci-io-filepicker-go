@@ -46,16 +46,16 @@ func TestWrite(t *testing.T) {
 	for _, test := range tests {
 		blob, err := client.Write(blob, filename, test.Opt)
 		if err != nil {
-			t.Errorf("want err == nil; got %v", err)
+			t.Errorf("want err == nil; got %v (i:%d)", err, i)
 		}
 		if blob == nil {
-			t.Error("want blob != nil; got nil")
-		}
-		if test.Url != reqUrl {
-			t.Errorf("want test.Url == reqUrl; got %q != %q", test.Url, reqUrl)
+			t.Errorf("want blob != nil; got nil (i:%d)", i)
 		}
 		if reqMethod != "POST" {
-			t.Errorf("want reqMethod == POST; got %s", reqMethod)
+			t.Errorf("want reqMethod == POST; got %s (i:%d)", reqMethod, i)
+		}
+		if test.Url != reqUrl {
+			t.Errorf("want reqUrl == %q; got %q (i:%d)", test.Url, reqUrl, i)
 		}
 	}
 }
@@ -126,19 +126,19 @@ func TestWriteUrl(t *testing.T) {
 	for _, test := range tests {
 		blob, err := client.WriteURL(blob, TestUrl, test.Opt)
 		if err != nil {
-			t.Errorf("want err == nil; got %v", err)
+			t.Errorf("want err == nil; got %v (i:%d)", err, i)
 		}
 		if blob == nil {
-			t.Error("want blob != nil; got nil")
+			t.Errorf("want blob != nil; got nil (i:%d)", i)
 		}
 		if test.Url != reqUrl {
-			t.Errorf("want test.Url == reqUrl; got %q != %q", test.Url, reqUrl)
+			t.Errorf("want reqUrl == %q; got %q (i:%d)", test.Url, reqUrl, i)
 		}
 		if reqMethod != "POST" {
-			t.Errorf("want reqMethod == POST; got %s", reqMethod)
+			t.Errorf("want reqMethod == POST; got %s (i:%d)", reqMethod, i)
 		}
 		if TestUrlEsc := "url=" + url.QueryEscape(TestUrl); reqBody != TestUrlEsc {
-			t.Errorf("want reqBody == TestUrlEsc; got %q != %q", reqBody, TestUrlEsc)
+			t.Errorf("want reqBody == %q; got %q (i:%d)", TestUrlEsc, reqBody, i)
 		}
 	}
 }

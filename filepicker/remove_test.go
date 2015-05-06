@@ -42,18 +42,18 @@ func TestRemove(t *testing.T) {
 	mock := MockServer(t, client, handler)
 	defer mock.Close()
 
-	for _, test := range tests {
+	for i, test := range tests {
 		if err := client.Remove(blob, test.Opt); err != nil {
-			t.Errorf("want err == nil; got %v", err)
+			t.Errorf("want err == nil; got %v (i:%d)", err, i)
 		}
 		if test.Url != reqUrl {
-			t.Errorf("want test.Url == reqUrl; got %q != %q", test.Url, reqUrl)
+			t.Errorf("want reqUrl == %q; got %q (i:%d)", test.Url, reqUrl, i)
 		}
 		if reqMethod != "DELETE" {
-			t.Errorf("want reqMethod == DELETE; got %s", reqMethod)
+			t.Errorf("want reqMethod == DELETE; got %s (i:%d)", reqMethod, i)
 		}
 		if reqBody != "" {
-			t.Errorf("want reqBody == ``; got %q", reqBody)
+			t.Errorf("want reqBody == ``; got %q (i:%d)", reqBody, i)
 		}
 	}
 }

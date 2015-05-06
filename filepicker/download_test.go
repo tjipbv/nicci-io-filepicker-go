@@ -52,25 +52,24 @@ func TestDownloadTo(t *testing.T) {
 	mock := MockServer(t, client, handler)
 	defer mock.Close()
 
-	for _, test := range tests {
+	for i, test := range tests {
 		var buff bytes.Buffer
 		byteRead, err := client.DownloadTo(blob, test.Opt, &buff)
 		if err != nil {
-			t.Errorf("want err == nil; got %v", err)
+			t.Errorf("want err == nil; got %v (i:%d)", err, i)
 		}
 		if l := int64(len(downloadFileContent)); l != byteRead {
-			t.Errorf("want l(%d) == byteRead(%d)", l, byteRead)
+			t.Errorf("want byteRead == %d; got %d (i:%d)", l, byteRead, i)
 		}
 		if test.Url != reqUrl {
-			t.Errorf("want test.Url == reqUrl; got %q != %q", test.Url, reqUrl)
+			t.Errorf("want reqUrl == %q; got %q (i:%d)", test.Url, reqUrl, i)
 		}
 		if reqMethod != "GET" {
-			t.Errorf("want reqMethod == GET; got %s", reqMethod)
+			t.Errorf("want reqMethod == GET; got %q (i:%d)", reqMethod, i)
 		}
 		content := string(buff.Bytes())
 		if content != downloadFileContent {
-			t.Errorf("want content == downloadFileContent; got %q != %q",
-				content, downloadFileContent)
+			t.Errorf("want content == %q; got %q (i:%d)", downloadFileContent, content, i)
 		}
 	}
 }
@@ -166,7 +165,7 @@ func TestDownloadToFile(t *testing.T) {
 			t.Errorf("want err == nil; got %v (i:%d)", err, i)
 		}
 		if test.Url != reqUrl {
-			t.Errorf("want test.Url == reqUrl; got %q != %q (i:%d)", test.Url, reqUrl, i)
+			t.Errorf("want reqUrl == %q; got %q (i:%d)", test.Url, reqUrl, i)
 		}
 		if reqMethod != "GET" {
 			t.Errorf("want reqMethod == GET; got %s (i:%d)", reqMethod, i)
@@ -176,11 +175,10 @@ func TestDownloadToFile(t *testing.T) {
 			t.Errorf("want err == nil; got %v (i:%d)", err, i)
 		}
 		if content := string(b); content != downloadFileContent {
-			t.Errorf("want content == downloadFileContent; %v != %v (i:%d)",
-				content, downloadFileContent, i)
+			t.Errorf("want content == %q; got %q (i:%d)", downloadFileContent, content, i)
 		}
 		if err := os.Remove(test.Path); err != nil {
-			t.Errorf("want err == nil; got %v", err)
+			t.Errorf("want err == nil; got %v (i:%d)", err, i)
 		}
 	}
 }

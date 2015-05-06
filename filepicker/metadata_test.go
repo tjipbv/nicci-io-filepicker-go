@@ -61,22 +61,22 @@ func TestStat(t *testing.T) {
 	mock := MockServer(t, client, handler)
 	defer mock.Close()
 
-	for _, test := range tests {
+	for i, test := range tests {
 		meta, err := client.Stat(blob, test.Opt)
 		if err != nil {
-			t.Errorf("want err == nil; got %v", err)
+			t.Errorf("want err == nil; got %v (i:%d)", err, i)
 		}
 		if meta == nil {
-			t.Errorf("want meta != nil; got nil")
+			t.Errorf("want meta != nil; got nil (i:%d)", i)
 		}
 		if test.Url != reqUrl {
-			t.Errorf("want test.Url == reqUrl; got %q != %q", test.Url, reqUrl)
+			t.Errorf("want reqUrl == %q; got %q (i:%d)", test.Url, reqUrl, i)
 		}
 		if reqMethod != "GET" {
-			t.Errorf("want reqMethod == GET; got %s", reqMethod)
+			t.Errorf("want reqMethod == GET; got %s (i:%d)", reqMethod, i)
 		}
 		if reqBody != "" {
-			t.Errorf("want reqBody == ``; got %q", reqBody)
+			t.Errorf("want reqBody == ``; got %q (i:%d)", reqBody, i)
 		}
 	}
 }
@@ -225,24 +225,22 @@ func TestStatMetadata(t *testing.T) {
 	for i, test := range tests {
 		b, err := json.Marshal(test.Res)
 		if err != nil {
-			t.Errorf("want err == nil; got %v (i: %d)", err, i)
+			t.Errorf("want err == nil; got %v (i:%d)", err, i)
 		}
 		metaraw := make(map[string]interface{})
 		if err := json.Unmarshal(b, &metaraw); err != nil {
-			t.Errorf("want err == nil; got %v (i: %d)", err, i)
+			t.Errorf("want err == nil; got %v (i:%d)", err, i)
 		}
 		metaval := reflect.ValueOf(filepicker.Metadata(metaraw))
 		res := reflect.ValueOf(test.Call).Call([]reflect.Value{metaval})
 		if l := len(res); l != 2 {
-			t.Errorf("want len(res) == 2; got %d (i: %d)", l, i)
+			t.Errorf("want len(res) == 2; got %d (i:%d)", l, i)
 		}
 		if !reflect.DeepEqual(test.Value, res[0].Interface()) {
-			t.Errorf("values `%v` and `%v` are not equal (i: %d)",
-				test.Value, res[0].Interface(), i)
+			t.Errorf("values `%v` and `%v` are not equal (i:%d)", test.Value, res[0].Interface(), i)
 		}
 		if !reflect.DeepEqual(test.Ok, res[1].Interface()) {
-			t.Errorf("boolean values `%v` and `%v` are not equal (i: %d)",
-				test.Ok, res[1].Interface(), i)
+			t.Errorf("boolean values `%v` and `%v` are not equal (i:%d)", test.Ok, res[1].Interface(), i)
 		}
 	}
 }
