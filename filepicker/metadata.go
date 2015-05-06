@@ -24,8 +24,8 @@ const (
 	TagContainer = MetaTag("container")
 )
 
-// MetaOpts TODO : (ppknap)
-type MetaOpts struct {
+// StatOpts TODO : (ppknap)
+type StatOpts struct {
 	// Tags TODO : (ppknap)
 	Tags []MetaTag `json:"tags,omitempty"`
 
@@ -34,7 +34,7 @@ type MetaOpts struct {
 }
 
 // toValues TODO : (ppknap)
-func (mo *MetaOpts) toValues() url.Values {
+func (mo *StatOpts) toValues() url.Values {
 	values := toValues(*mo)
 	values.Del("tags")
 	for _, tag := range mo.Tags {
@@ -46,7 +46,8 @@ func (mo *MetaOpts) toValues() url.Values {
 // Metadata TODO : (ppkanp)
 type Metadata map[string]interface{}
 
-// Size returns
+// Size returns the size of a stored file in bytes. The second value (ok) is set
+// to false if the information is unavailable.
 func (md Metadata) Size() (size uint64, ok bool) {
 	if val, ok := md[string(TagSize)]; ok {
 		return uint64(val.(float64)), ok
@@ -54,7 +55,8 @@ func (md Metadata) Size() (size uint64, ok bool) {
 	return
 }
 
-// Mimetype TODO : (ppknap)
+// Mimetype returns the type of a stored file. The second value (ok) is set to
+// false if the information is unavailable.
 func (md Metadata) Mimetype() (mimetype string, ok bool) {
 	if val, ok := md[string(TagMimetype)]; ok {
 		return val.(string), ok
@@ -62,7 +64,8 @@ func (md Metadata) Mimetype() (mimetype string, ok bool) {
 	return
 }
 
-// Filename TODO : (ppknap)
+// Filename returns the name of a stored file. The second value (ok) is set to
+// false if the information is unavailable.
 func (md Metadata) Filename() (filename string, ok bool) {
 	if val, ok := md[string(TagFilename)]; ok {
 		return val.(string), ok
@@ -70,7 +73,9 @@ func (md Metadata) Filename() (filename string, ok bool) {
 	return
 }
 
-// Width TODO : (ppknap)
+// Width returns the width of a stored image. If the file is not an image or the
+// information about its size is unavailable, the second value (ok) will be set
+// to false.
 func (md Metadata) Width() (width uint64, ok bool) {
 	if val, ok := md[string(TagWidth)]; ok && val != nil {
 		return uint64(val.(float64)), ok
@@ -78,7 +83,9 @@ func (md Metadata) Width() (width uint64, ok bool) {
 	return
 }
 
-// Height TODO : (ppknap)
+// Height returns the height of a stored image. If the file is not an image or
+// the information about its size is unavailable, the second value (ok) will be
+// set to false.
 func (md Metadata) Height() (height uint64, ok bool) {
 	if val, ok := md[string(TagHeight)]; ok && val != nil {
 		return uint64(val.(float64)), ok
@@ -86,7 +93,8 @@ func (md Metadata) Height() (height uint64, ok bool) {
 	return
 }
 
-// Uploaded TODO : (ppknap)
+// Uploaded returns the upload time of a stored file. The second value (ok) is
+// set to false if the information is unavailable.
 func (md Metadata) Uploaded() (uploaded time.Time, ok bool) {
 	if val, ok := md[string(TagUploaded)]; ok {
 		raw := int64(val.(float64))
@@ -95,7 +103,8 @@ func (md Metadata) Uploaded() (uploaded time.Time, ok bool) {
 	return
 }
 
-// Writeable TODO : (ppknap)
+// Writeable specifies if the stored file is writeable. The second value (ok) is
+// set to false if the information is unavailable.
 func (md Metadata) Writeable() (writeable, ok bool) {
 	if val, ok := md[string(TagWriteable)]; ok {
 		return val.(bool), ok
@@ -103,7 +112,8 @@ func (md Metadata) Writeable() (writeable, ok bool) {
 	return
 }
 
-// Md5Hash TODO : (ppknap)
+// Md5Hash returns the MD5 hash of the stored file. The second value (ok) is set
+// to false if the information is unavailable.
 func (md Metadata) Md5Hash() (md5hash string, ok bool) {
 	if val, ok := md[string(TagMd5Hash)]; ok {
 		return val.(string), ok
@@ -111,7 +121,8 @@ func (md Metadata) Md5Hash() (md5hash string, ok bool) {
 	return
 }
 
-// Location TODO : (ppknap)
+// Location returns the storage location (S3, etc.) of a stored file. The second
+// value (ok) is set to false if the information is unavailable.
 func (md Metadata) Location() (location Storage, ok bool) {
 	if val, ok := md[string(TagLocation)]; ok {
 		return Storage(val.(string)), ok
@@ -119,7 +130,8 @@ func (md Metadata) Location() (location Storage, ok bool) {
 	return
 }
 
-// Path TODO : (ppknap)
+// Path returns the storage path of a stored file. The second value (ok) is set
+// to false if the information is unavailable.
 func (md Metadata) Path() (path string, ok bool) {
 	if val, ok := md[string(TagPath)]; ok {
 		return val.(string), ok
@@ -127,7 +139,8 @@ func (md Metadata) Path() (path string, ok bool) {
 	return
 }
 
-// Container TODO : (ppknap)
+// Container returns the storage container of a stored file. The second
+// value (ok) is set to false if the information is unavailable.
 func (md Metadata) Container() (container string, ok bool) {
 	if val, ok := md[string(TagContainer)]; ok {
 		return val.(string), ok
@@ -136,7 +149,7 @@ func (md Metadata) Container() (container string, ok bool) {
 }
 
 // Stat TODO : (ppknap)
-func (c *Client) Stat(src *Blob, opt *MetaOpts) (md Metadata, err error) {
+func (c *Client) Stat(src *Blob, opt *StatOpts) (md Metadata, err error) {
 	blobUrl, err := url.Parse(src.Url)
 	if err != nil {
 		return
@@ -154,5 +167,6 @@ func (c *Client) Stat(src *Blob, opt *MetaOpts) (md Metadata, err error) {
 		return nil, FPError(resp.StatusCode)
 	}
 	md = make(Metadata)
-	return md, json.NewDecoder(resp.Body).Decode(&md)
+	err = json.NewDecoder(resp.Body).Decode(&md)
+	return md, err
 }

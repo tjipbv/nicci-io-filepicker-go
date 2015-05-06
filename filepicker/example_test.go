@@ -38,7 +38,7 @@ func ExampleStat() {
 	// Create a new Filepicker.io client with S3 storage set by default.
 	cl := filepicker.NewClient(ApiKey)
 
-	options := &filepicker.MetaOpts{
+	options := &filepicker.StatOpts{
 		Tags: []filepicker.MetaTag{filepicker.TagMd5Hash},
 	}
 

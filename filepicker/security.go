@@ -47,14 +47,14 @@ type PolicyOpts struct {
 type Method string
 
 const (
-	MetPick     = Method(`pick`)     // Pick methods.
-	MetRead     = Method(`read`)     // Download methods.
-	MetStat     = Method(`stat`)     // Stat method.
-	MetWrite    = Method(`write`)    // Write method.
-	MetWriteurl = Method(`writeUrl`) // WriteURL method.
-	MetStore    = Method(`store`)    // Store methods.
-	MetConvert  = Method(`convert`)  // Convert method.
-	MetRemove   = Method(`remove`)   // Remove method.
+	MetPick     = Method("pick")     // Pick methods.
+	MetRead     = Method("read")     // Download methods.
+	MetStat     = Method("stat")     // Stat method.
+	MetWrite    = Method("write")    // Write method.
+	MetWriteurl = Method("writeUrl") // WriteURL method.
+	MetStore    = Method("store")    // Store methods.
+	MetConvert  = Method("convert")  // Convert method.
+	MetRemove   = Method("remove")   // Remove method.
 )
 
 // MarshalJSON implements json.Marshaler interface. It transforms Expiry field
@@ -73,7 +73,7 @@ type Policy string
 // TODO : (ppknap)
 func MakePolicy(po *PolicyOpts) (policy Policy, err error) {
 	if po == nil || po.Expiry.IsZero() {
-		return policy, fmt.Errorf(`filepicker: invalid expiration date`)
+		return policy, fmt.Errorf("filepicker: invalid expiration date")
 	}
 	byted, err := json.Marshal(po)
 	if err != nil {

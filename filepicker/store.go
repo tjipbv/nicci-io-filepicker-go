@@ -73,7 +73,7 @@ func (c *Client) store(name string, fn func() string) (blob *Blob, err error) {
 		return
 	}
 	defer file.Close()
-	mimewr, err := wr.CreateFormFile(`fileUpload`, name)
+	mimewr, err := wr.CreateFormFile("fileUpload", name)
 	if err != nil {
 		return
 	}
@@ -99,12 +99,12 @@ func (c *Client) StoreURL(dataUrl string, opt *StoreOpts) (blob *Blob, err error
 
 func (c *Client) storeURL(dataUrl string, fn func() string) (blob *Blob, err error) {
 	values := url.Values{}
-	values.Set(`url`, dataUrl)
+	values.Set("url", dataUrl)
 	return storeRes(c.Client.PostForm(fn(), values))
 }
 
 // storeRes handles client response error and, if there is none, this function
-// reads response's Body and unmarshals it into Blob object.
+// reads response's Body and unmarshals it into a Blob object.
 func storeRes(resp *http.Response, respErr error) (blob *Blob, err error) {
 	if respErr != nil {
 		return nil, respErr
@@ -126,11 +126,11 @@ func (c *Client) toStoreURL(opt *StoreOpts) *url.URL {
 			storage = opt.Location
 		}
 	}
-	values.Set(`key`, c.apiKey)
+	values.Set("key", c.apiKey)
 	return &url.URL{
 		Scheme:   apiURL.Scheme,
 		Host:     apiURL.Host,
-		Path:     path.Join(`api`, `store`, string(storage)),
+		Path:     path.Join("api", "store", string(storage)),
 		RawQuery: values.Encode(),
 	}
 }
