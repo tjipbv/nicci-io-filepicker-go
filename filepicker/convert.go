@@ -3,6 +3,7 @@ package filepicker
 import (
 	"net/url"
 	"path"
+	"strings"
 )
 
 // FitOption TODO : (ppknap)
@@ -90,6 +91,7 @@ func (co *ConvertOpts) toValues() url.Values {
 
 // ConvertAndStore TODO : (ppknap)
 func (c *Client) ConvertAndStore(src *Blob, opt *ConvertOpts) (*Blob, error) {
+	const content = "application/x-www-form-urlencoded"
 	blobUrl, err := url.Parse(src.Url)
 	if err != nil {
 		return nil, err
@@ -100,5 +102,5 @@ func (c *Client) ConvertAndStore(src *Blob, opt *ConvertOpts) (*Blob, error) {
 	}
 	values := opt.toValues()
 	values.Set("key", c.apiKey)
-	return storeRes(c.Client.PostForm(blobUrl.String(), values))
+	return storeRes(c.do("POST", blobUrl.String(), content, strings.NewReader(values.Encode())))
 }

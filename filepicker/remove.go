@@ -1,9 +1,6 @@
 package filepicker
 
-import (
-	"net/http"
-	"net/url"
-)
+import "net/url"
 
 // RemoveOpts structure allows the user to set additional options when removing
 // the data.
@@ -21,10 +18,10 @@ func (ro *RemoveOpts) toValues() url.Values {
 }
 
 // Remove is used to delete a file from Filepicker.io and any underlying storage.
-func (c *Client) Remove(src *Blob, opt *RemoveOpts) (err error) {
+func (c *Client) Remove(src *Blob, opt *RemoveOpts) error {
 	blobUrl, err := url.Parse(src.Url)
 	if err != nil {
-		return
+		return err
 	}
 	values := url.Values{}
 	if opt != nil {
@@ -32,13 +29,9 @@ func (c *Client) Remove(src *Blob, opt *RemoveOpts) (err error) {
 	}
 	values.Set("key", c.apiKey)
 	blobUrl.RawQuery = values.Encode()
-	req, err := http.NewRequest("DELETE", blobUrl.String(), nil)
+	resp, err := c.do("DELETE", blobUrl.String(), "", nil)
 	if err != nil {
-		return
-	}
-	resp, err := c.Client.Do(req)
-	if err != nil {
-		return
+		return err
 	}
 	defer resp.Body.Close()
 	return readError(resp)

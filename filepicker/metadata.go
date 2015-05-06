@@ -149,24 +149,26 @@ func (md Metadata) Container() (container string, ok bool) {
 }
 
 // Stat TODO : (ppknap)
-func (c *Client) Stat(src *Blob, opt *StatOpts) (md Metadata, err error) {
+func (c *Client) Stat(src *Blob, opt *StatOpts) (Metadata, error) {
 	blobUrl, err := url.Parse(src.Url)
 	if err != nil {
-		return
+		return nil, err
 	}
 	if opt != nil {
 		blobUrl.RawQuery = opt.toValues().Encode()
 	}
 	blobUrl.Path = path.Join(blobUrl.Path, "metadata")
-	resp, err := c.Client.Get(blobUrl.String())
+	resp, err := c.do("GET", blobUrl.String(), "", nil)
 	if err != nil {
-		return
+		return nil, err
 	}
 	defer resp.Body.Close()
-	if err = readError(resp); err != nil {
-		return
+	if err := readError(resp); err != nil {
+		return nil, err
 	}
-	md = make(Metadata)
-	err = json.NewDecoder(resp.Body).Decode(&md)
-	return md, err
+	md := make(Metadata)
+	if err := json.NewDecoder(resp.Body).Decode(&md); err != nil {
+		return nil, err
+	}
+	return md, nil
 }

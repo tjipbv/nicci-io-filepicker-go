@@ -3,6 +3,7 @@ package filepicker
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -16,6 +17,9 @@ func init() {
 		panic("filepicker: invalid filepicker.io service address " + FilepickerURL)
 	}
 }
+
+// UserAgentId TODO : (ppknap)
+const UserAgentId = "filepicker-go 0.1"
 
 // FilepickerURL is a link to filepicker.io service.
 const FilepickerURL = "https://www.filepicker.io/"
@@ -118,6 +122,18 @@ func newClient(apiKey string, storage Storage) *Client {
 		storage: storage,
 		Client:  &http.Client{},
 	}
+}
+
+func (c *Client) do(method, urlStr, bodyType string, body io.Reader) (*http.Response, error) {
+	req, err := http.NewRequest(method, urlStr, body)
+	if err != nil {
+		return nil, err
+	}
+	if bodyType != "" {
+		req.Header.Set("Content-Type", bodyType)
+	}
+	req.Header.Set("User-Agent", UserAgentId)
+	return c.Client.Do(req)
 }
 
 // toValues takes all non-zero values from provided interface and puts them to

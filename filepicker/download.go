@@ -28,8 +28,7 @@ func (do *DownloadOpts) toValues() url.Values {
 }
 
 // DownloadTo TODO : (ppknap)
-func (c *Client) DownloadTo(src *Blob, opt *DownloadOpts, dst io.Writer) (
-	written int64, err error) {
+func (c *Client) DownloadTo(src *Blob, opt *DownloadOpts, dst io.Writer) (written int64, err error) {
 	resp, err := c.download(src, opt)
 	if err != nil {
 		return
@@ -39,10 +38,10 @@ func (c *Client) DownloadTo(src *Blob, opt *DownloadOpts, dst io.Writer) (
 }
 
 // DownloadToFile TODO : (ppknap)
-func (c *Client) DownloadToFile(src *Blob, opt *DownloadOpts, filedir string) (err error) {
+func (c *Client) DownloadToFile(src *Blob, opt *DownloadOpts, filedir string) error {
 	resp, err := c.download(src, opt)
 	if err != nil {
-		return
+		return err
 	}
 	defer resp.Body.Close()
 	directory, filename := filepath.Split(filedir)
@@ -54,11 +53,11 @@ func (c *Client) DownloadToFile(src *Blob, opt *DownloadOpts, filedir string) (e
 	}
 	file, err := os.Create(filepath.Clean(filepath.Join(directory, filename)))
 	if err != nil {
-		return
+		return err
 	}
 	defer file.Close()
 	_, err = io.Copy(file, resp.Body)
-	return
+	return err
 }
 
 func (c *Client) download(src *Blob, opt *DownloadOpts) (resp *http.Response, err error) {
@@ -69,7 +68,7 @@ func (c *Client) download(src *Blob, opt *DownloadOpts) (resp *http.Response, er
 	if opt != nil {
 		blobUrl.RawQuery = opt.toValues().Encode()
 	}
-	if resp, err = c.Client.Get(blobUrl.String()); err != nil {
+	if resp, err = c.do("GET", blobUrl.String(), "", nil); err != nil {
 		return
 	}
 	if err = readError(resp); err != nil {

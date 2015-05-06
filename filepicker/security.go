@@ -89,7 +89,7 @@ type Security struct {
 }
 
 // TODO : (ppknap)
-func MakeSecurity(secret string, policy Policy) (security Security) {
+func MakeSecurity(secret string, policy Policy) Security {
 	hasher := hmac.New(sha256.New, []byte(secret))
 	hasher.Write([]byte(policy))
 	return Security{

@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"strings"
 )
 
 // StoreOpts structure allows the user to configure how to store the data.
@@ -59,30 +60,30 @@ func (so *StoreOpts) toValues() url.Values {
 //
 // StoreOpt defines how filepicker.io will store the data. If a nil pointer is
 // provided, this function will use default storage options.
-func (c *Client) Store(name string, opt *StoreOpts) (blob *Blob, err error) {
+func (c *Client) Store(name string, opt *StoreOpts) (*Blob, error) {
 	return c.store(name, func() string {
 		return c.toStoreURL(opt).String()
 	})
 }
 
-func (c *Client) store(name string, fn func() string) (blob *Blob, err error) {
+func (c *Client) store(name string, fn func() string) (*Blob, error) {
 	buff := &bytes.Buffer{}
 	wr := multipart.NewWriter(buff)
 	file, err := os.Open(name)
 	if err != nil {
-		return
+		return nil, err
 	}
 	defer file.Close()
 	mimewr, err := wr.CreateFormFile("fileUpload", name)
 	if err != nil {
-		return
+		return nil, err
 	}
 	if _, err = io.Copy(mimewr, file); err != nil {
-		return
+		return nil, err
 	}
 	content := wr.FormDataContentType()
 	wr.Close()
-	return storeRes(c.Client.Post(fn(), content, buff))
+	return storeRes(c.do("POST", fn(), content, buff))
 }
 
 // StoreURL takes a URL that points to the data to store and sends them directly
@@ -91,30 +92,34 @@ func (c *Client) store(name string, fn func() string) (blob *Blob, err error) {
 //
 // StoreOpt defines how filepicker.io will store the data. If a nil pointer is
 // provided, this function will use default storage options.
-func (c *Client) StoreURL(dataUrl string, opt *StoreOpts) (blob *Blob, err error) {
+func (c *Client) StoreURL(dataUrl string, opt *StoreOpts) (*Blob, error) {
 	return c.storeURL(dataUrl, func() string {
 		return c.toStoreURL(opt).String()
 	})
 }
 
-func (c *Client) storeURL(dataUrl string, fn func() string) (blob *Blob, err error) {
+func (c *Client) storeURL(dataUrl string, fn func() string) (*Blob, error) {
+	const content = "application/x-www-form-urlencoded"
 	values := url.Values{}
 	values.Set("url", dataUrl)
-	return storeRes(c.Client.PostForm(fn(), values))
+	return storeRes(c.do("POST", fn(), content, strings.NewReader(values.Encode())))
 }
 
 // storeRes handles client response error and, if there is none, this function
 // reads response's Body and unmarshals it into a Blob object.
-func storeRes(resp *http.Response, respErr error) (blob *Blob, err error) {
+func storeRes(resp *http.Response, respErr error) (*Blob, error) {
 	if respErr != nil {
 		return nil, respErr
 	}
 	defer resp.Body.Close()
-	if err = readError(resp); err != nil {
-		return
+	if err := readError(resp); err != nil {
+		return nil, err
 	}
-	blob = &Blob{}
-	return blob, json.NewDecoder(resp.Body).Decode(blob)
+	blob := &Blob{}
+	if err := json.NewDecoder(resp.Body).Decode(blob); err != nil {
+		return nil, err
+	}
+	return blob, nil
 }
 
 func (c *Client) toStoreURL(opt *StoreOpts) *url.URL {
