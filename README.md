@@ -1,4 +1,4 @@
-Filepicker Golang Library [![GoDoc](https://godoc.org/github.com/filepicker/filepicker-go/filepicker?status.svg)](https://godoc.org/github.com/filepicker/filepicker-go/filepicker) [![Build Status](https://travis-ci.org/filepicker/filepicker-go.svg?branch=master)](https://travis-ci.org/filepicker/filepicker-go)
+Filepicker Go Library [![GoDoc](https://godoc.org/github.com/filepicker/filepicker-go/filepicker?status.svg)](https://godoc.org/github.com/filepicker/filepicker-go/filepicker) [![Build Status](https://travis-ci.org/filepicker/filepicker-go.svg?branch=master)](https://travis-ci.org/filepicker/filepicker-go) [![Coverage Status](https://img.shields.io/coveralls/filepicker/filepicker-go/master.svg)](https://coveralls.io/r/filepicker/filepicker-go?branch=master)
 ======
 
 filepicker is a Go library for accessing the [Filepicker's REST API](https://www.filepicker.com/documentation/file_ingestion/rest_api/retrieving).

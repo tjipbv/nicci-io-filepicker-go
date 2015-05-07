@@ -13,9 +13,11 @@ env:
   global:
   - GOBIN=${HOME}/bin
   - PATH=${GOBIN}:${PATH}
+  - secure: "BhJGG/xtViZJiNyliN1gC7XsVByhxvstXp/PspH5vWcAi3Xy2kCjeHPha5wKmR5dZb9rsghTM6Upo7m1Zri96hYuwS/jbfXRZw6cFVo2cVsg0QiFiNrxKmOJ4+0lwS3d0bFVss97INSie9xm8l+redhYHwZHdvkq4MG0TIdK1sk="
 
 install:
   - go get golang.org/x/tools/cmd/vet github.com/golang/lint/golint golang.org/x/tools/cmd/cover github.com/fzipp/gocyclo
+  - go get golang.org/x/tools/cmd/cover github.com/mattn/goveralls github.com/modocache/gover
   - go get -t -v ./...
 
 script:
@@ -23,3 +25,6 @@ script:
   - golint ./...
   - gocyclo -over 10 .
   - go test -v -race ./...
+  - go list -f '{{if len .TestGoFiles}}"go test -coverprofile={{.Dir}}/.coverprofile{{.ImportPath}}"{{end}}' ./... | xargs -i sh -c {}
+  - gover
+  - goveralls -coverprofile=gover.coverprofile -service=travis-ci -repotoken=$COVERALLS_TOKEN
