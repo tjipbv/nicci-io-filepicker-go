@@ -1,0 +1,25 @@
+language: go
+
+notifications:
+  email: false
+
+go:
+  - 1.4.2
+
+os:
+  - osx
+
+env:
+  global:
+  - GOBIN=${HOME}/bin
+  - PATH=${GOBIN}:${PATH}
+
+install:
+  - go get golang.org/x/tools/cmd/vet github.com/golang/lint/golint golang.org/x/tools/cmd/cover github.com/fzipp/gocyclo
+  - go get -t -v ./...
+
+script:
+  - go vet ./...
+  - golint ./...
+  - gocyclo -over 10 .
+  - go test -v -race ./...

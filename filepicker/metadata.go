@@ -10,6 +10,7 @@ import (
 // MetaTag TODO : (ppknap)
 type MetaTag string
 
+// TODO : (ppknap)
 const (
 	TagSize      = MetaTag("size")
 	TagMimetype  = MetaTag("mimetype")
@@ -152,15 +153,15 @@ func (md Metadata) Container() (container string, ok bool) {
 
 // Stat allows the user to get more detailed metadata about the stored file.
 func (c *Client) Stat(src *Blob, opt *StatOpts) (Metadata, error) {
-	blobUrl, err := url.Parse(src.Url)
+	blobURL, err := url.Parse(src.URL)
 	if err != nil {
 		return nil, err
 	}
 	if opt != nil {
-		blobUrl.RawQuery = opt.toValues().Encode()
+		blobURL.RawQuery = opt.toValues().Encode()
 	}
-	blobUrl.Path = path.Join(blobUrl.Path, "metadata")
-	resp, err := c.do("GET", blobUrl.String(), "", nil)
+	blobURL.Path = path.Join(blobURL.Path, "metadata")
+	resp, err := c.do("GET", blobURL.String(), "", nil)
 	if err != nil {
 		return nil, err
 	}

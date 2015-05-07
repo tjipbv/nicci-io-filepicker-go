@@ -18,8 +18,8 @@ func init() {
 	}
 }
 
-// UserAgentId TODO : (ppknap)
-const UserAgentId = "filepicker-go 0.1"
+// UserAgentID TODO : (ppknap)
+const UserAgentID = "filepicker-go 0.1"
 
 // FilepickerURL is a link to filepicker.io service.
 const FilepickerURL = "https://www.filepicker.io/"
@@ -30,6 +30,7 @@ var apiURL *url.URL
 // Storage represents cloud storage services supported by filepicker.io client.
 type Storage string
 
+// TODO : (ppknap)
 const (
 	S3        = Storage("S3")        // Amazon S3 bucket.
 	Azure     = Storage("azure")     // Azure blob storage container.
@@ -39,8 +40,8 @@ const (
 
 // Blob contains information about the stored file.
 type Blob struct {
-	// Url points to where the file is stored.
-	Url string `json:"url,omitempty"`
+	// URL points to where the file is stored.
+	URL string `json:"url,omitempty"`
 
 	// Filename is the name of the file, if available.
 	Filename string `json:"filename,omitempty"`
@@ -68,22 +69,22 @@ type Blob struct {
 
 // NewBlob creates a new Blob object from a given file handle.
 func NewBlob(handle string) *Blob {
-	blobUrl := url.URL{
+	blobURL := url.URL{
 		Scheme: apiURL.Scheme,
 		Host:   apiURL.Host,
 		Path:   path.Join("api", "file", handle),
 	}
-	return &Blob{Url: blobUrl.String()}
+	return &Blob{URL: blobURL.String()}
 }
 
 // Handle returns the unique identifier of the file. Its value is used by
 // filepicker service to locate the data.
 func (b *Blob) Handle() string {
-	blobUrl, err := url.Parse(b.Url)
+	blobURL, err := url.Parse(b.URL)
 	if err != nil {
 		return ""
 	}
-	return path.Base(blobUrl.Path)
+	return path.Base(blobURL.Path)
 }
 
 // fperror represents an error that can be returned from filepicker.io service.
@@ -132,7 +133,7 @@ func (c *Client) do(method, urlStr, bodyType string, body io.Reader) (*http.Resp
 	if bodyType != "" {
 		req.Header.Set("Content-Type", bodyType)
 	}
-	req.Header.Set("User-Agent", UserAgentId)
+	req.Header.Set("User-Agent", UserAgentID)
 	return c.Client.Do(req)
 }
 

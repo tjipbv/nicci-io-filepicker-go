@@ -19,7 +19,7 @@ func (ro *RemoveOpts) toValues() url.Values {
 
 // Remove is used to delete a file from Filepicker.io and any underlying storage.
 func (c *Client) Remove(src *Blob, opt *RemoveOpts) error {
-	blobUrl, err := url.Parse(src.Url)
+	blobURL, err := url.Parse(src.URL)
 	if err != nil {
 		return err
 	}
@@ -28,8 +28,8 @@ func (c *Client) Remove(src *Blob, opt *RemoveOpts) error {
 		values = opt.toValues()
 	}
 	values.Set("key", c.apiKey)
-	blobUrl.RawQuery = values.Encode()
-	resp, err := c.do("DELETE", blobUrl.String(), "", nil)
+	blobURL.RawQuery = values.Encode()
+	resp, err := c.do("DELETE", blobURL.String(), "", nil)
 	if err != nil {
 		return err
 	}

@@ -9,6 +9,7 @@ import (
 // FitOption specifies how to resize the image.
 type FitOption string
 
+// TODO : (ppknap)
 const (
 	FitClip  = FitOption("clip")
 	FitCrop  = FitOption("crop")
@@ -20,6 +21,7 @@ const (
 // "fit" parameter.
 type AlignOption string
 
+// TODO : (ppknap)
 const (
 	AlignTop    = AlignOption("top")
 	AlignBottom = AlignOption("bottom")
@@ -92,15 +94,15 @@ func (co *ConvertOpts) toValues() url.Values {
 // ConvertAndStore TODO : (ppknap)
 func (c *Client) ConvertAndStore(src *Blob, opt *ConvertOpts) (*Blob, error) {
 	const content = "application/x-www-form-urlencoded"
-	blobUrl, err := url.Parse(src.Url)
+	blobURL, err := url.Parse(src.URL)
 	if err != nil {
 		return nil, err
 	}
-	blobUrl.Path = path.Join(blobUrl.Path, "convert")
+	blobURL.Path = path.Join(blobURL.Path, "convert")
 	if opt == nil {
 		panic("filepicker: convert options pointer cannot be set to nil")
 	}
 	values := opt.toValues()
 	values.Set("key", c.apiKey)
-	return storeRes(c.do("POST", blobUrl.String(), content, strings.NewReader(values.Encode())))
+	return storeRes(c.do("POST", blobURL.String(), content, strings.NewReader(values.Encode())))
 }

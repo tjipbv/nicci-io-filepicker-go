@@ -28,8 +28,8 @@ var dummyErrStr = "dummy error"
 
 func (mt *MockedTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.URL.Scheme = "http" // Disable SSL
-	if userAgent := req.Header.Get("User-Agent"); userAgent != filepicker.UserAgentId {
-		panic("filepicker: invalid User-Agent header field: " + userAgent)
+	if userAgentID := req.Header.Get("User-Agent"); userAgentID != filepicker.UserAgentID {
+		panic("filepicker: invalid User-Agent header field: " + userAgentID)
 	}
 	return mt.Transport.RoundTrip(req)
 }

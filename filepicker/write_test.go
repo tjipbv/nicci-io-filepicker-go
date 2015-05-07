@@ -11,32 +11,32 @@ import (
 func TestWrite(t *testing.T) {
 	tests := []struct {
 		Opt *filepicker.WriteOpts
-		Url string
+		URL string
 	}{
 		{
 			Opt: nil,
-			Url: "http://www.filepicker.io/api/file/2HHH3",
+			URL: "http://www.filepicker.io/api/file/2HHH3",
 		},
 		{
 			Opt: &filepicker.WriteOpts{
 				Base64Decode: true,
 			},
-			Url: "http://www.filepicker.io/api/file/2HHH3?base64decode=true",
+			URL: "http://www.filepicker.io/api/file/2HHH3?base64decode=true",
 		},
 		{
 			Opt: &filepicker.WriteOpts{
 				Base64Decode: true,
 				Security:     dummySecurity,
 			},
-			Url: "http://www.filepicker.io/api/file/2HHH3?base64decode=true&policy=P&signature=S",
+			URL: "http://www.filepicker.io/api/file/2HHH3?base64decode=true&policy=P&signature=S",
 		},
 	}
 
 	filename := tempFile(t)
 	defer os.Remove(filename)
 
-	var reqUrl, reqMethod, reqBody string
-	handler := testHandle(&reqUrl, &reqMethod, &reqBody)
+	var reqURL, reqMethod, reqBody string
+	handler := testHandle(&reqURL, &reqMethod, &reqBody)
 
 	blob := filepicker.NewBlob(FakeHandle)
 	client := filepicker.NewClient(FakeApiKey)
@@ -54,8 +54,8 @@ func TestWrite(t *testing.T) {
 		if reqMethod != "POST" {
 			t.Errorf("want reqMethod == POST; got %s (i:%d)", reqMethod, i)
 		}
-		if test.Url != reqUrl {
-			t.Errorf("want reqUrl == %q; got %q (i:%d)", test.Url, reqUrl, i)
+		if test.URL != reqURL {
+			t.Errorf("want reqURL == %q; got %q (i:%d)", test.URL, reqURL, i)
 		}
 	}
 }
@@ -90,33 +90,33 @@ func TestWriteErrorNoFile(t *testing.T) {
 	}
 }
 
-func TestWriteUrl(t *testing.T) {
-	const TestUrl = "https://www.filepicker.com/image.png"
+func TestWriteURL(t *testing.T) {
+	const TestURL = "https://www.filepicker.com/image.png"
 	tests := []struct {
 		Opt *filepicker.WriteOpts
-		Url string
+		URL string
 	}{
 		{
 			Opt: nil,
-			Url: "http://www.filepicker.io/api/file/2HHH3",
+			URL: "http://www.filepicker.io/api/file/2HHH3",
 		},
 		{
 			Opt: &filepicker.WriteOpts{
 				Base64Decode: true,
 			},
-			Url: "http://www.filepicker.io/api/file/2HHH3?base64decode=true",
+			URL: "http://www.filepicker.io/api/file/2HHH3?base64decode=true",
 		},
 		{
 			Opt: &filepicker.WriteOpts{
 				Base64Decode: true,
 				Security:     dummySecurity,
 			},
-			Url: "http://www.filepicker.io/api/file/2HHH3?base64decode=true&policy=P&signature=S",
+			URL: "http://www.filepicker.io/api/file/2HHH3?base64decode=true&policy=P&signature=S",
 		},
 	}
 
-	var reqUrl, reqMethod, reqBody string
-	handler := testHandle(&reqUrl, &reqMethod, &reqBody)
+	var reqURL, reqMethod, reqBody string
+	handler := testHandle(&reqURL, &reqMethod, &reqBody)
 
 	blob := filepicker.NewBlob(FakeHandle)
 	client := filepicker.NewClient(FakeApiKey)
@@ -124,20 +124,20 @@ func TestWriteUrl(t *testing.T) {
 	defer mock.Close()
 
 	for i, test := range tests {
-		blob, err := client.WriteURL(blob, TestUrl, test.Opt)
+		blob, err := client.WriteURL(blob, TestURL, test.Opt)
 		if err != nil {
 			t.Errorf("want err == nil; got %v (i:%d)", err, i)
 		}
 		if blob == nil {
 			t.Errorf("want blob != nil; got nil (i:%d)", i)
 		}
-		if test.Url != reqUrl {
-			t.Errorf("want reqUrl == %q; got %q (i:%d)", test.Url, reqUrl, i)
+		if test.URL != reqURL {
+			t.Errorf("want reqURL == %q; got %q (i:%d)", test.URL, reqURL, i)
 		}
 		if reqMethod != "POST" {
 			t.Errorf("want reqMethod == POST; got %s (i:%d)", reqMethod, i)
 		}
-		if TestUrlEsc := "url=" + url.QueryEscape(TestUrl); reqBody != TestUrlEsc {
+		if TestUrlEsc := "url=" + url.QueryEscape(TestURL); reqBody != TestUrlEsc {
 			t.Errorf("want reqBody == %q; got %q (i:%d)", TestUrlEsc, reqBody, i)
 		}
 	}

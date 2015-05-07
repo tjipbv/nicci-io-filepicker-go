@@ -9,7 +9,7 @@ import (
 func TestConvertAndStore(t *testing.T) {
 	tests := []struct {
 		Opt  *filepicker.ConvertOpts
-		Url  string
+		URL  string
 		Body string
 	}{
 		{
@@ -17,7 +17,7 @@ func TestConvertAndStore(t *testing.T) {
 				Width:    100,
 				Location: filepicker.Azure,
 			},
-			Url:  "http://www.filepicker.io/api/file/2HHH3/convert",
+			URL:  "http://www.filepicker.io/api/file/2HHH3/convert",
 			Body: "key=0KKK1&storeLocation=azure&width=100",
 		},
 		{
@@ -26,7 +26,7 @@ func TestConvertAndStore(t *testing.T) {
 				Height: 200,
 				Fit:    filepicker.FitScale,
 			},
-			Url:  "http://www.filepicker.io/api/file/2HHH3/convert",
+			URL:  "http://www.filepicker.io/api/file/2HHH3/convert",
 			Body: "fit=scale&height=200&key=0KKK1&width=150",
 		},
 		{
@@ -34,7 +34,7 @@ func TestConvertAndStore(t *testing.T) {
 				Align:   filepicker.AlignTop,
 				Quality: 34,
 			},
-			Url:  "http://www.filepicker.io/api/file/2HHH3/convert",
+			URL:  "http://www.filepicker.io/api/file/2HHH3/convert",
 			Body: "align=top&key=0KKK1&quality=34",
 		},
 		{
@@ -42,13 +42,13 @@ func TestConvertAndStore(t *testing.T) {
 				Width:    100,
 				Security: dummySecurity,
 			},
-			Url:  "http://www.filepicker.io/api/file/2HHH3/convert",
+			URL:  "http://www.filepicker.io/api/file/2HHH3/convert",
 			Body: "key=0KKK1&policy=P&signature=S&width=100",
 		},
 	}
 
-	var reqUrl, reqMethod, reqBody string
-	handler := testHandle(&reqUrl, &reqMethod, &reqBody)
+	var reqURL, reqMethod, reqBody string
+	handler := testHandle(&reqURL, &reqMethod, &reqBody)
 
 	blob := filepicker.NewBlob(FakeHandle)
 	client := filepicker.NewClient(FakeApiKey)
@@ -63,8 +63,8 @@ func TestConvertAndStore(t *testing.T) {
 		if blob == nil {
 			t.Errorf("want blob != nil; got nil (i:%d)", i)
 		}
-		if test.Url != reqUrl {
-			t.Errorf("want reqUrl == %q; got %q (i:%d)", test.Url, reqUrl, i)
+		if test.URL != reqURL {
+			t.Errorf("want reqURL == %q; got %q (i:%d)", test.URL, reqURL, i)
 		}
 		if reqMethod != "POST" {
 			t.Errorf("want reqMethod == POST; got %s (i:%d)", reqMethod, i)

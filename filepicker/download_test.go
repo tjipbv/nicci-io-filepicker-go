@@ -15,32 +15,32 @@ const downloadFileContent = "DOWNLOADTEST"
 func TestDownloadTo(t *testing.T) {
 	tests := []struct {
 		Opt *filepicker.DownloadOpts
-		Url string
+		URL string
 	}{
 		{
 			Opt: nil,
-			Url: "http://www.filepicker.io/api/file/2HHH3",
+			URL: "http://www.filepicker.io/api/file/2HHH3",
 		},
 		{
 			Opt: &filepicker.DownloadOpts{
 				Base64Decode: true,
 			},
-			Url: "http://www.filepicker.io/api/file/2HHH3?base64decode=true",
+			URL: "http://www.filepicker.io/api/file/2HHH3?base64decode=true",
 		},
 		{
 			Opt: &filepicker.DownloadOpts{
 				Base64Decode: true,
 				Security:     dummySecurity,
 			},
-			Url: "http://www.filepicker.io/api/file/2HHH3?base64decode=true&policy=P&signature=S",
+			URL: "http://www.filepicker.io/api/file/2HHH3?base64decode=true&policy=P&signature=S",
 		},
 	}
 
-	var reqUrl, reqMethod, reqBody string
+	var reqURL, reqMethod, reqBody string
 	handler := func(w http.ResponseWriter, req *http.Request) {
 		body, _ := ioutil.ReadAll(req.Body)
 		reqBody = string(body)
-		reqUrl = req.URL.String()
+		reqURL = req.URL.String()
 		reqMethod = req.Method
 		if _, err := w.Write([]byte(downloadFileContent)); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -61,8 +61,8 @@ func TestDownloadTo(t *testing.T) {
 		if l := int64(len(downloadFileContent)); l != byteRead {
 			t.Errorf("want byteRead == %d; got %d (i:%d)", l, byteRead, i)
 		}
-		if test.Url != reqUrl {
-			t.Errorf("want reqUrl == %q; got %q (i:%d)", test.Url, reqUrl, i)
+		if test.URL != reqURL {
+			t.Errorf("want reqURL == %q; got %q (i:%d)", test.URL, reqURL, i)
 		}
 		if reqMethod != "GET" {
 			t.Errorf("want reqMethod == GET; got %q (i:%d)", reqMethod, i)
@@ -95,28 +95,28 @@ func TestDownloadToFile(t *testing.T) {
 	var testCounter int
 	tests := []struct {
 		Opt     *filepicker.DownloadOpts
-		Url     string
+		URL     string
 		XName   string
 		FileDir string
 		Path    string
 	}{
 		{
 			Opt:     nil,
-			Url:     "http://www.filepicker.io/api/file/2HHH3",
+			URL:     "http://www.filepicker.io/api/file/2HHH3",
 			XName:   "document.txt",
 			FileDir: ".",
 			Path:    "./document.txt",
 		},
 		{
 			Opt:     nil,
-			Url:     "http://www.filepicker.io/api/file/2HHH3",
+			URL:     "http://www.filepicker.io/api/file/2HHH3",
 			XName:   "",
 			FileDir: "something.txt",
 			Path:    "./something.txt",
 		},
 		{
 			Opt:     nil,
-			Url:     "http://www.filepicker.io/api/file/2HHH3",
+			URL:     "http://www.filepicker.io/api/file/2HHH3",
 			XName:   "document.txt",
 			FileDir: "./doc.txt",
 			Path:    "./doc.txt",
@@ -125,7 +125,7 @@ func TestDownloadToFile(t *testing.T) {
 			Opt: &filepicker.DownloadOpts{
 				Base64Decode: true,
 			},
-			Url:     "http://www.filepicker.io/api/file/2HHH3?base64decode=true",
+			URL:     "http://www.filepicker.io/api/file/2HHH3?base64decode=true",
 			XName:   "dc.txt",
 			FileDir: ".",
 			Path:    "./dc.txt",
@@ -135,18 +135,18 @@ func TestDownloadToFile(t *testing.T) {
 				Base64Decode: true,
 				Security:     dummySecurity,
 			},
-			Url:     "http://www.filepicker.io/api/file/2HHH3?base64decode=true&policy=P&signature=S",
+			URL:     "http://www.filepicker.io/api/file/2HHH3?base64decode=true&policy=P&signature=S",
 			XName:   "dc.txt",
 			FileDir: ".",
 			Path:    "./dc.txt",
 		},
 	}
 
-	var reqUrl, reqMethod, reqBody string
+	var reqURL, reqMethod, reqBody string
 	handler := func(w http.ResponseWriter, req *http.Request) {
 		body, _ := ioutil.ReadAll(req.Body)
 		reqBody = string(body)
-		reqUrl = req.URL.String()
+		reqURL = req.URL.String()
 		reqMethod = req.Method
 		w.Header().Set("X-File-Name", tests[testCounter].XName)
 		testCounter++
@@ -164,8 +164,8 @@ func TestDownloadToFile(t *testing.T) {
 		if err := client.DownloadToFile(blob, test.Opt, test.FileDir); err != nil {
 			t.Errorf("want err == nil; got %v (i:%d)", err, i)
 		}
-		if test.Url != reqUrl {
-			t.Errorf("want reqUrl == %q; got %q (i:%d)", test.Url, reqUrl, i)
+		if test.URL != reqURL {
+			t.Errorf("want reqURL == %q; got %q (i:%d)", test.URL, reqURL, i)
 		}
 		if reqMethod != "GET" {
 			t.Errorf("want reqMethod == GET; got %s (i:%d)", reqMethod, i)

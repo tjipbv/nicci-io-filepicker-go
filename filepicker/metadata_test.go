@@ -14,18 +14,18 @@ import (
 func TestStat(t *testing.T) {
 	tests := []struct {
 		Opt *filepicker.StatOpts
-		Url string
+		URL string
 	}{
 		{
 			Opt: nil,
-			Url: "http://www.filepicker.io/api/file/2HHH3/metadata",
+			URL: "http://www.filepicker.io/api/file/2HHH3/metadata",
 		},
 		{
 			Opt: &filepicker.StatOpts{
 				Tags:     nil,
 				Security: dummySecurity,
 			},
-			Url: "http://www.filepicker.io/api/file/2HHH3/metadata?policy=P&signature=S",
+			URL: "http://www.filepicker.io/api/file/2HHH3/metadata?policy=P&signature=S",
 		},
 		{
 			Opt: &filepicker.StatOpts{
@@ -34,7 +34,7 @@ func TestStat(t *testing.T) {
 					filepicker.TagWidth,
 				},
 			},
-			Url: "http://www.filepicker.io/api/file/2HHH3/metadata?size=true&width=true",
+			URL: "http://www.filepicker.io/api/file/2HHH3/metadata?size=true&width=true",
 		},
 		{
 			Opt: &filepicker.StatOpts{
@@ -43,15 +43,15 @@ func TestStat(t *testing.T) {
 				},
 				Security: dummySecurity,
 			},
-			Url: "http://www.filepicker.io/api/file/2HHH3/metadata?location=true&policy=P&signature=S",
+			URL: "http://www.filepicker.io/api/file/2HHH3/metadata?location=true&policy=P&signature=S",
 		},
 	}
 
-	var reqUrl, reqMethod, reqBody string
+	var reqURL, reqMethod, reqBody string
 	handler := func(w http.ResponseWriter, req *http.Request) {
 		body, _ := ioutil.ReadAll(req.Body)
 		reqBody = string(body)
-		reqUrl = req.URL.String()
+		reqURL = req.URL.String()
 		reqMethod = req.Method
 		w.Write([]byte("{}"))
 	}
@@ -69,8 +69,8 @@ func TestStat(t *testing.T) {
 		if meta == nil {
 			t.Errorf("want meta != nil; got nil (i:%d)", i)
 		}
-		if test.Url != reqUrl {
-			t.Errorf("want reqUrl == %q; got %q (i:%d)", test.Url, reqUrl, i)
+		if test.URL != reqURL {
+			t.Errorf("want reqURL == %q; got %q (i:%d)", test.URL, reqURL, i)
 		}
 		if reqMethod != "GET" {
 			t.Errorf("want reqMethod == GET; got %s (i:%d)", reqMethod, i)

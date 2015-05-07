@@ -46,6 +46,7 @@ type PolicyOpts struct {
 // Method defines the calls that created policy will be able to make.
 type Method string
 
+// TODO : (ppknap)
 const (
 	MetPick     = Method("pick")     // Pick methods.
 	MetRead     = Method("read")     // Download methods.

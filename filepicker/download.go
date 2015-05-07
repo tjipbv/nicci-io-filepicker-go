@@ -29,10 +29,10 @@ func (do *DownloadOpts) toValues() url.Values {
 }
 
 // DownloadTo TODO : (ppknap)
-func (c *Client) DownloadTo(src *Blob, opt *DownloadOpts, dst io.Writer) (written int64, err error) {
+func (c *Client) DownloadTo(src *Blob, opt *DownloadOpts, dst io.Writer) (int64, error) {
 	resp, err := c.download(src, opt)
 	if err != nil {
-		return
+		return 0, err
 	}
 	defer resp.Body.Close()
 	return io.Copy(dst, resp.Body)
@@ -62,14 +62,14 @@ func (c *Client) DownloadToFile(src *Blob, opt *DownloadOpts, filedir string) er
 }
 
 func (c *Client) download(src *Blob, opt *DownloadOpts) (resp *http.Response, err error) {
-	blobUrl, err := url.Parse(src.Url)
+	blobURL, err := url.Parse(src.URL)
 	if err != nil {
 		return
 	}
 	if opt != nil {
-		blobUrl.RawQuery = opt.toValues().Encode()
+		blobURL.RawQuery = opt.toValues().Encode()
 	}
-	if resp, err = c.do("GET", blobUrl.String(), "", nil); err != nil {
+	if resp, err = c.do("GET", blobURL.String(), "", nil); err != nil {
 		return
 	}
 	if err = readError(resp); err != nil {

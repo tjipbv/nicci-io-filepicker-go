@@ -15,12 +15,12 @@ func ExampleStoreURL() {
 	cl := filepicker.NewClient(ApiKey)
 
 	// Store URL content using default options.
-	const dataUrl = "https://d3urzlae3olibs.cloudfront.net/watermark.png"
-	blob, err := cl.StoreURL(dataUrl, nil)
+	const dataURL = "https://d3urzlae3olibs.cloudfront.net/watermark.png"
+	blob, err := cl.StoreURL(dataURL, nil)
 	if err != nil {
-		log.Fatalf("cannot store file %q: %v\n", dataUrl, err)
+		log.Fatalf("cannot store file %q: %v\n", dataURL, err)
 	}
-	log.Printf("file %q stored: %q\n", dataUrl, blob.Url)
+	log.Printf("file %q stored: %q\n", dataURL, blob.URL)
 }
 
 func ExampleDownloadToFile() {

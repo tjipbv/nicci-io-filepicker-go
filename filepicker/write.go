@@ -29,14 +29,14 @@ func (c *Client) Write(src *Blob, name string, opt *WriteOpts) (*Blob, error) {
 }
 
 // WriteURL TODO : (ppknap)
-func (c *Client) WriteURL(src *Blob, dataUrl string, opt *WriteOpts) (*Blob, error) {
-	return c.storeURL(dataUrl, func() string {
+func (c *Client) WriteURL(src *Blob, dataURL string, opt *WriteOpts) (*Blob, error) {
+	return c.storeURL(dataURL, func() string {
 		return c.toWriteURL(src, opt).String()
 	})
 }
 
 func (c *Client) toWriteURL(src *Blob, opt *WriteOpts) *url.URL {
-	blobUrl, err := url.Parse(src.Url)
+	blobURL, err := url.Parse(src.URL)
 	if err != nil {
 		return &url.URL{}
 	}
@@ -44,6 +44,6 @@ func (c *Client) toWriteURL(src *Blob, opt *WriteOpts) *url.URL {
 	if opt != nil {
 		values = opt.toValues()
 	}
-	blobUrl.RawQuery = values.Encode()
-	return blobUrl
+	blobURL.RawQuery = values.Encode()
+	return blobURL
 }

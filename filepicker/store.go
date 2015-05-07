@@ -92,16 +92,16 @@ func (c *Client) store(name string, fn func() string) (*Blob, error) {
 //
 // StoreOpt defines how filepicker.io will store the data. If a nil pointer is
 // provided, this function will use default storage options.
-func (c *Client) StoreURL(dataUrl string, opt *StoreOpts) (*Blob, error) {
-	return c.storeURL(dataUrl, func() string {
+func (c *Client) StoreURL(dataURL string, opt *StoreOpts) (*Blob, error) {
+	return c.storeURL(dataURL, func() string {
 		return c.toStoreURL(opt).String()
 	})
 }
 
-func (c *Client) storeURL(dataUrl string, fn func() string) (*Blob, error) {
+func (c *Client) storeURL(dataURL string, fn func() string) (*Blob, error) {
 	const content = "application/x-www-form-urlencoded"
 	values := url.Values{}
-	values.Set("url", dataUrl)
+	values.Set("url", dataURL)
 	return storeRes(c.do("POST", fn(), content, strings.NewReader(values.Encode())))
 }
 
