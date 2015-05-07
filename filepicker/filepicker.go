@@ -137,7 +137,7 @@ func (c *Client) do(method, urlStr, bodyType string, body io.Reader) (*http.Resp
 }
 
 // toValues takes all non-zero values from provided interface and puts them to
-// a url.Values object.
+// url.Values object.
 func toValues(val interface{}) url.Values {
 	data, err := json.Marshal(val)
 	if err != nil {

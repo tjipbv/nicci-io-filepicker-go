@@ -29,7 +29,9 @@ type StatOpts struct {
 	// Tags TODO : (ppknap)
 	Tags []MetaTag `json:"tags,omitempty"`
 
-	// Security TODO : (ppknap)
+	// Security stores Filepicker.io policy and signature members. If you enable
+	// security option in your developer portal, these values must be set in
+	// order to perform a valid request call.
 	Security
 }
 
@@ -148,7 +150,7 @@ func (md Metadata) Container() (container string, ok bool) {
 	return
 }
 
-// Stat TODO : (ppknap)
+// Stat allows the user to get more detailed metadata about the stored file.
 func (c *Client) Stat(src *Blob, opt *StatOpts) (Metadata, error) {
 	blobUrl, err := url.Parse(src.Url)
 	if err != nil {

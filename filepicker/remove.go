@@ -12,7 +12,7 @@ type RemoveOpts struct {
 }
 
 // toValues takes all non-zero values from provided RemoveOpts entity and puts
-// them to a url.Values object.
+// them to url.Values object.
 func (ro *RemoveOpts) toValues() url.Values {
 	return toValues(*ro)
 }

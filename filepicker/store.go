@@ -49,7 +49,7 @@ type StoreOpts struct {
 }
 
 // toValues takes all non-zero values from provided StoreOpts entity and puts
-// them to a url.Values object.
+// them to url.Values object.
 func (so *StoreOpts) toValues() url.Values {
 	return toValues(*so)
 }

@@ -67,10 +67,10 @@ func (po *PolicyOpts) MarshalJSON() ([]byte, error) {
 	}{*po, po.Expiry.Unix()})
 }
 
-// TODO : (ppknap)
+// Policy stores the information about what the user can or cannot do.
 type Policy string
 
-// TODO : (ppknap)
+// MakePolicy creates a new Policy object from provided policy options.
 func MakePolicy(po *PolicyOpts) (policy Policy, err error) {
 	if po == nil || po.Expiry.IsZero() {
 		return policy, fmt.Errorf("filepicker: invalid expiration date")
@@ -82,13 +82,18 @@ func MakePolicy(po *PolicyOpts) (policy Policy, err error) {
 	return Policy(base64.URLEncoding.EncodeToString(byted)), nil
 }
 
-// TODO : (ppknap)
+// Security type stores the piece of information that is required to access
+// secured URLs.
 type Security struct {
 	Policy    Policy `json:"policy,omitempty"`
 	Signature string `json:"signature,omitempty"`
 }
 
-// TODO : (ppknap)
+// MakeSecurity creates a new Security object from the given secret and policy
+// instances.
+//
+// You should not store your secret in your code. Instead, call this function
+// once and then use obtained strings to initialize Security objects directly.
 func MakeSecurity(secret string, policy Policy) Security {
 	hasher := hmac.New(sha256.New, []byte(secret))
 	hasher.Write([]byte(policy))

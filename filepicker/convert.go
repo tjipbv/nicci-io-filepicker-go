@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// FitOption TODO : (ppknap)
+// FitOption specifies how to resize the image.
 type FitOption string
 
 const (
@@ -16,7 +16,8 @@ const (
 	FitMax   = FitOption("max")
 )
 
-// AlignOption TODO : (ppknap)
+// AlignOption defines how the image is aligned when resizing and using the
+// "fit" parameter.
 type AlignOption string
 
 const (
@@ -27,8 +28,7 @@ const (
 	AlignFaces  = AlignOption("faces")
 )
 
-// ConvertStoreOpt TODO : (ppknap)
-// NOT nil
+// ConvertOpts structure allows the user to set conversion and security options.
 type ConvertOpts struct {
 	// Width of the inputted image, in pixels. This property is ignored when the
 	// file is not an image.
@@ -84,7 +84,7 @@ type ConvertOpts struct {
 }
 
 // toValues takes all non-zero values from provided ConvertOpt instance and puts
-// them to a url.Values object.
+// them to url.Values object.
 func (co *ConvertOpts) toValues() url.Values {
 	return toValues(*co)
 }

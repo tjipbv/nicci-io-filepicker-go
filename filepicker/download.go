@@ -9,7 +9,8 @@ import (
 	"path/filepath"
 )
 
-// DownloadOpts TODO
+// DownloadOpts structure defines a set of additional options that may be
+// required to successfully download the stored data.
 type DownloadOpts struct {
 	// Base64Decode indicates whether the data should be first decoded from
 	// base64 before being written to the file.
@@ -22,7 +23,7 @@ type DownloadOpts struct {
 }
 
 // toValues takes all non-zero values from provided DownloadOpts entity and puts
-// them to a url.Values object.
+// them to url.Values object.
 func (do *DownloadOpts) toValues() url.Values {
 	return toValues(*do)
 }
