@@ -87,15 +87,15 @@ func (b *Blob) Handle() string {
 	return path.Base(blobURL.Path)
 }
 
-// fperror represents an error that can be returned from filepicker.io service.
-type fperror struct {
+// Fperror represents an error that can be returned from filepicker.io service.
+type Fperror struct {
 	Code    int
 	Message string
 }
 
 // Error satisfies builtin.error interface. It prints an error string with
 // the reason of failure.
-func (e fperror) Error() string {
+func (e Fperror) Error() string {
 	return fmt.Sprintf("filepicker: %d - %s", e.Code, e.Message)
 }
 
@@ -161,7 +161,7 @@ func readError(resp *http.Response) error {
 	if err != nil {
 		return err
 	}
-	return fperror{
+	return Fperror{
 		Code:    resp.StatusCode,
 		Message: strings.TrimSpace(string(bytes)),
 	}
