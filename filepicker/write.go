@@ -1,6 +1,10 @@
 package filepicker
 
-import "net/url"
+import (
+	"io"
+	"net/url"
+	"os"
+)
 
 // WriteOpts structure defines a set of additional options that may be required
 // to successfully rewrite the contents of the stored file.
@@ -23,7 +27,16 @@ func (wo *WriteOpts) toValues() url.Values {
 
 // Write TODO : (ppknap)
 func (c *Client) Write(src *Blob, name string, opt *WriteOpts) (*Blob, error) {
-	return c.store(name, func() string {
+	reader, err := os.Open(name)
+	if err != nil {
+		return nil, err
+	}
+	defer reader.Close()
+	return c.WriteReader(src, reader, opt)
+}
+
+func (c *Client) WriteReader(src *Blob, reader io.Reader, opt *WriteOpts) (*Blob, error) {
+	return c.store("", reader, func() string {
 		return c.toWriteURL(src, opt).String()
 	})
 }

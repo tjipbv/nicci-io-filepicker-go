@@ -61,19 +61,23 @@ func (so *StoreOpts) toValues() url.Values {
 // StoreOpt defines how filepicker.io will store the data. If a nil pointer is
 // provided, this function will use default storage options.
 func (c *Client) Store(name string, opt *StoreOpts) (*Blob, error) {
-	return c.store(name, func() string {
+	reader, err := os.Open(name)
+	if err != nil {
+		return nil, err
+	}
+	defer reader.Close()
+	return c.StoreReader(name, reader, opt)
+}
+
+func (c *Client) StoreReader(name string, reader io.Reader, opt *StoreOpts) (*Blob, error) {
+	return c.store(name, reader, func() string {
 		return c.toStoreURL(opt).String()
 	})
 }
 
-func (c *Client) store(name string, fn func() string) (*Blob, error) {
+func (c *Client) store(name string, file io.Reader, fn func() string) (*Blob, error) {
 	buff := &bytes.Buffer{}
 	wr := multipart.NewWriter(buff)
-	file, err := os.Open(name)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
 	mimewr, err := wr.CreateFormFile("fileUpload", name)
 	if err != nil {
 		return nil, err
@@ -82,7 +86,9 @@ func (c *Client) store(name string, fn func() string) (*Blob, error) {
 		return nil, err
 	}
 	content := wr.FormDataContentType()
-	wr.Close()
+	if err := wr.Close(); err != nil {
+		return nil, err
+	}
 	return storeRes(c.do("POST", fn(), content, buff))
 }
 
