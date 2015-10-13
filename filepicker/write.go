@@ -35,6 +35,7 @@ func (c *Client) Write(src *Blob, name string, opt *WriteOpts) (*Blob, error) {
 	return c.WriteReader(src, reader, opt)
 }
 
+// WriteReader TODO : (ppknap)
 func (c *Client) WriteReader(src *Blob, reader io.Reader, opt *WriteOpts) (*Blob, error) {
 	return c.store("", reader, func() string {
 		return c.toWriteURL(src, opt).String()

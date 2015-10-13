@@ -69,6 +69,12 @@ func (c *Client) Store(name string, opt *StoreOpts) (*Blob, error) {
 	return c.StoreReader(name, reader, opt)
 }
 
+// StoreReader allows writing of an arbitary reader to a clients storage bucket
+// If there is no error, this function returns a blob object that contains
+// information about the stored file.
+//
+// StoreOpt defines how filepicker.io will store the data. If a nil pointer is
+// provided, this function will use default storage options.
 func (c *Client) StoreReader(name string, reader io.Reader, opt *StoreOpts) (*Blob, error) {
 	return c.store(name, reader, func() string {
 		return c.toStoreURL(opt).String()
