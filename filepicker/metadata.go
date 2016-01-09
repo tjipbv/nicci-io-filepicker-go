@@ -52,7 +52,7 @@ type Metadata map[string]interface{}
 // Size returns the size of a stored file in bytes. The second value (ok) is set
 // to false if the information is unavailable.
 func (md Metadata) Size() (size uint64, ok bool) {
-	if val, ok := md[string(TagSize)]; ok {
+	if val, ok := md[string(TagSize)]; ok && val != nil {
 		return uint64(val.(float64)), ok
 	}
 	return
@@ -61,7 +61,7 @@ func (md Metadata) Size() (size uint64, ok bool) {
 // Mimetype returns the type of a stored file. The second value (ok) is set to
 // false if the information is unavailable.
 func (md Metadata) Mimetype() (mimetype string, ok bool) {
-	if val, ok := md[string(TagMimetype)]; ok {
+	if val, ok := md[string(TagMimetype)]; ok && val != nil {
 		return val.(string), ok
 	}
 	return
@@ -70,7 +70,7 @@ func (md Metadata) Mimetype() (mimetype string, ok bool) {
 // Filename returns the name of a stored file. The second value (ok) is set to
 // false if the information is unavailable.
 func (md Metadata) Filename() (filename string, ok bool) {
-	if val, ok := md[string(TagFilename)]; ok {
+	if val, ok := md[string(TagFilename)]; ok && val != nil {
 		return val.(string), ok
 	}
 	return
@@ -99,7 +99,7 @@ func (md Metadata) Height() (height uint64, ok bool) {
 // Uploaded returns the upload time of a stored file. The second value (ok) is
 // set to false if the information is unavailable.
 func (md Metadata) Uploaded() (uploaded time.Time, ok bool) {
-	if val, ok := md[string(TagUploaded)]; ok {
+	if val, ok := md[string(TagUploaded)]; ok && val != nil {
 		raw := int64(val.(float64))
 		return time.Unix(raw/1000, raw%1000), ok
 	}
@@ -109,7 +109,7 @@ func (md Metadata) Uploaded() (uploaded time.Time, ok bool) {
 // Writeable specifies if the stored file is writeable. The second value (ok) is
 // set to false if the information is unavailable.
 func (md Metadata) Writeable() (writeable, ok bool) {
-	if val, ok := md[string(TagWriteable)]; ok {
+	if val, ok := md[string(TagWriteable)]; ok && val != nil {
 		return val.(bool), ok
 	}
 	return
@@ -118,7 +118,7 @@ func (md Metadata) Writeable() (writeable, ok bool) {
 // Md5Hash returns the MD5 hash of the stored file. The second value (ok) is set
 // to false if the information is unavailable.
 func (md Metadata) Md5Hash() (md5hash string, ok bool) {
-	if val, ok := md[string(TagMd5Hash)]; ok {
+	if val, ok := md[string(TagMd5Hash)]; ok && val != nil {
 		return val.(string), ok
 	}
 	return
@@ -127,7 +127,7 @@ func (md Metadata) Md5Hash() (md5hash string, ok bool) {
 // Location returns the storage location (S3, etc.) of a stored file. The second
 // value (ok) is set to false if the information is unavailable.
 func (md Metadata) Location() (location Storage, ok bool) {
-	if val, ok := md[string(TagLocation)]; ok {
+	if val, ok := md[string(TagLocation)]; ok && val != nil {
 		return Storage(val.(string)), ok
 	}
 	return
@@ -136,7 +136,7 @@ func (md Metadata) Location() (location Storage, ok bool) {
 // Path returns the storage path of a stored file. The second value (ok) is set
 // to false if the information is unavailable.
 func (md Metadata) Path() (path string, ok bool) {
-	if val, ok := md[string(TagPath)]; ok {
+	if val, ok := md[string(TagPath)]; ok && val != nil {
 		return val.(string), ok
 	}
 	return
@@ -145,7 +145,7 @@ func (md Metadata) Path() (path string, ok bool) {
 // Container returns the storage container of a stored file. The second
 // value (ok) is set to false if the information is unavailable.
 func (md Metadata) Container() (container string, ok bool) {
-	if val, ok := md[string(TagContainer)]; ok {
+	if val, ok := md[string(TagContainer)]; ok && val != nil {
 		return val.(string), ok
 	}
 	return
